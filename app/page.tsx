@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import QRCodeGenerator from '@/components/QRCodeGenerator';
 
 export default function Home() {
   return (
@@ -188,24 +189,16 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                  See EasyAccessQR in Action
+                  Try the EasyAccessQR Generator
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Watch how easy it is to create custom QR codes and track their
-                  performance.
+                  Enter a link and customize your QR code below. Download and
+                  use instantly!
                 </p>
               </div>
             </div>
             <div className="mx-auto max-w-5xl mt-12">
-              <div className="overflow-hidden rounded-lg border bg-background shadow">
-                <div className="aspect-video w-full bg-muted flex items-center justify-center">
-                  <img
-                    src="/placeholder.svg?height=720&width=1280"
-                    alt="EasyAccessQR Dashboard Demo"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
+              <QRCodeGenerator />
             </div>
           </div>
         </section>
@@ -216,7 +209,7 @@ export default function Home() {
         >
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2">
-              <div className="flex items-center justify-center">
+              {/* <div className="flex items-center justify-center">
                 <div className="overflow-hidden rounded-lg border bg-background shadow">
                   <div className="aspect-video w-full bg-muted flex items-center justify-center">
                     <img
@@ -226,7 +219,7 @@ export default function Home() {
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
@@ -439,7 +432,7 @@ export default function Home() {
                   <div className="flex items-start gap-4">
                     <div className="rounded-full bg-muted p-2">
                       <img
-                        src="/placeholder.svg?height=100&width=100"
+                        src="https://mighty.tools/mockmind-api/content/human/97.jpg"
                         alt="Sarah Johnson"
                         className="h-10 w-10 rounded-full object-cover"
                       />
@@ -465,7 +458,7 @@ export default function Home() {
                   <div className="flex items-start gap-4">
                     <div className="rounded-full bg-muted p-2">
                       <img
-                        src="/placeholder.svg?height=100&width=100"
+                        src="https://mighty.tools/mockmind-api/content/human/112.jpg"
                         alt="Michael Chen"
                         className="h-10 w-10 rounded-full object-cover"
                       />
@@ -492,7 +485,7 @@ export default function Home() {
                   <div className="flex items-start gap-4">
                     <div className="rounded-full bg-muted p-2">
                       <img
-                        src="/placeholder.svg?height=100&width=100"
+                        src="https://mighty.tools/mockmind-api/content/human/124.jpg"
                         alt="Emily Rodriguez"
                         className="h-10 w-10 rounded-full object-cover"
                       />

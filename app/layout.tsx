@@ -21,6 +21,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <script
         defer
+        async
         data-domain="easyaccessqr.com"
         src="https://tic.nrby.xyz/js/script.js"
       ></script>
