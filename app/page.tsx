@@ -1,8 +1,22 @@
-import Link from "next/link"
-import { ArrowRight, BarChart3, CheckCircle, ReplaceIcon as Customize, QrCode, Shield, Zap } from "lucide-react"
+import Link from 'next/link';
+import {
+  ArrowRight,
+  BarChart3,
+  CheckCircle,
+  ReplaceIcon as Customize,
+  QrCode,
+  Shield,
+  Zap,
+} from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export default function Home() {
   return (
@@ -14,26 +28,39 @@ export default function Home() {
             <span className="text-xl font-bold">EasyAccessQR</span>
           </div>
           <nav className="hidden md:flex gap-6">
-            <Link href="#features" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link
+              href="#features"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
               Features
             </Link>
-            <Link href="#pricing" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link
+              href="#pricing"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
               Pricing
             </Link>
-            <Link href="#testimonials" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link
+              href="#testimonials"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
               Testimonials
             </Link>
-            <Link href="#faq" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link
+              href="#faq"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
               FAQ
             </Link>
           </nav>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link
+              href="/login"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
               Login
             </Link>
-            <Button asChild>
-              <Link href="/signup">Get Started</Link>
-            </Button>
+            <Button disabled>Coming soon</Button>
           </div>
         </div>
       </header>
@@ -47,15 +74,13 @@ export default function Home() {
                     Create Custom QR Codes with Powerful Analytics
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Generate beautiful, customized QR codes and track their performance with our comprehensive analytics
-                    dashboard.
+                    Generate beautiful, customized QR codes and track their
+                    performance with our comprehensive analytics dashboard.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button size="lg" asChild>
-                    <Link href="/signup">
-                      Start Creating QR Codes <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
+                  <Button size="lg" disabled>
+                    Coming soon
                   </Button>
                   <Button size="lg" variant="outline" asChild>
                     <Link href="#demo">See Demo</Link>
@@ -66,7 +91,10 @@ export default function Home() {
                 <div className="relative w-full max-w-[500px] aspect-square">
                   <div className="absolute inset-0 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-lg opacity-20 blur-xl"></div>
                   <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 flex items-center justify-center">
-                    <QrCode className="w-3/4 h-3/4 text-primary" strokeWidth={1} />
+                    <QrCode
+                      className="w-3/4 h-3/4 text-primary"
+                      strokeWidth={1}
+                    />
                   </div>
                 </div>
               </div>
@@ -74,7 +102,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-muted/50">
+        <section
+          id="features"
+          className="w-full py-12 md:py-24 lg:py-32 bg-muted/50"
+        >
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -82,7 +113,8 @@ export default function Home() {
                   Powerful QR Code Features
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Everything you need to create, customize, and track your QR codes in one place.
+                  Everything you need to create, customize, and track your QR
+                  codes in one place.
                 </p>
               </div>
             </div>
@@ -92,7 +124,8 @@ export default function Home() {
                   <Customize className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Custom Design</CardTitle>
                   <CardDescription>
-                    Personalize your QR codes with colors, logos, and shapes to match your brand.
+                    Personalize your QR codes with colors, logos, and shapes to
+                    match your brand.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -101,7 +134,8 @@ export default function Home() {
                   <BarChart3 className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Detailed Analytics</CardTitle>
                   <CardDescription>
-                    Track scans, locations, devices, and more with our comprehensive dashboard.
+                    Track scans, locations, devices, and more with our
+                    comprehensive dashboard.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -109,7 +143,10 @@ export default function Home() {
                 <CardHeader>
                   <Zap className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Instant Generation</CardTitle>
-                  <CardDescription>Create QR codes in seconds with our intuitive and fast interface.</CardDescription>
+                  <CardDescription>
+                    Create QR codes in seconds with our intuitive and fast
+                    interface.
+                  </CardDescription>
                 </CardHeader>
               </Card>
               <Card>
@@ -117,7 +154,8 @@ export default function Home() {
                   <Shield className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Secure & Reliable</CardTitle>
                   <CardDescription>
-                    Your QR codes are always available and protected with our secure infrastructure.
+                    Your QR codes are always available and protected with our
+                    secure infrastructure.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -125,7 +163,10 @@ export default function Home() {
                 <CardHeader>
                   <ArrowRight className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Dynamic QR Codes</CardTitle>
-                  <CardDescription>Update your QR code destination without changing the code itself.</CardDescription>
+                  <CardDescription>
+                    Update your QR code destination without changing the code
+                    itself.
+                  </CardDescription>
                 </CardHeader>
               </Card>
               <Card>
@@ -133,7 +174,8 @@ export default function Home() {
                   <CheckCircle className="h-10 w-10 text-primary mb-2" />
                   <CardTitle>Bulk Creation</CardTitle>
                   <CardDescription>
-                    Generate multiple QR codes at once for campaigns or large-scale projects.
+                    Generate multiple QR codes at once for campaigns or
+                    large-scale projects.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -149,7 +191,8 @@ export default function Home() {
                   See EasyAccessQR in Action
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Watch how easy it is to create custom QR codes and track their performance.
+                  Watch how easy it is to create custom QR codes and track their
+                  performance.
                 </p>
               </div>
             </div>
@@ -167,7 +210,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="analytics" className="w-full py-12 md:py-24 lg:py-32 bg-muted/50">
+        <section
+          id="analytics"
+          className="w-full py-12 md:py-24 lg:py-32 bg-muted/50"
+        >
           <div className="container px-4 md:px-6">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2">
               <div className="flex items-center justify-center">
@@ -187,7 +233,8 @@ export default function Home() {
                     Powerful Analytics Dashboard
                   </h2>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Gain valuable insights into how your QR codes are performing with our comprehensive analytics tools.
+                    Gain valuable insights into how your QR codes are performing
+                    with our comprehensive analytics tools.
                   </p>
                 </div>
                 <ul className="grid gap-2">
@@ -213,8 +260,8 @@ export default function Home() {
                   </li>
                 </ul>
                 <div>
-                  <Button size="lg" asChild>
-                    <Link href="/signup">Try Analytics Now</Link>
+                  <Button size="lg" disabled>
+                    Coming soon
                   </Button>
                 </div>
               </div>
@@ -239,9 +286,14 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle>Basic</CardTitle>
                   <div className="text-4xl font-bold">
-                    $9<span className="text-sm font-normal text-muted-foreground">/month</span>
+                    $9
+                    <span className="text-sm font-normal text-muted-foreground">
+                      /month
+                    </span>
                   </div>
-                  <CardDescription>Perfect for individuals and small projects.</CardDescription>
+                  <CardDescription>
+                    Perfect for individuals and small projects.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <ul className="grid gap-2">
@@ -264,19 +316,26 @@ export default function Home() {
                   </ul>
                 </CardContent>
                 <div className="p-6 pt-0 mt-auto">
-                  <Button className="w-full" asChild>
-                    <Link href="/signup?plan=basic">Get Started</Link>
+                  <Button className="w-full" disabled>
+                    Coming soon
                   </Button>
                 </div>
               </Card>
               <Card className="flex flex-col border-primary">
                 <CardHeader>
-                  <div className="text-center text-sm font-medium text-primary mb-2">MOST POPULAR</div>
+                  <div className="text-center text-sm font-medium text-primary mb-2">
+                    MOST POPULAR
+                  </div>
                   <CardTitle>Professional</CardTitle>
                   <div className="text-4xl font-bold">
-                    $29<span className="text-sm font-normal text-muted-foreground">/month</span>
+                    $29
+                    <span className="text-sm font-normal text-muted-foreground">
+                      /month
+                    </span>
                   </div>
-                  <CardDescription>Ideal for businesses and marketing teams.</CardDescription>
+                  <CardDescription>
+                    Ideal for businesses and marketing teams.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <ul className="grid gap-2">
@@ -303,8 +362,8 @@ export default function Home() {
                   </ul>
                 </CardContent>
                 <div className="p-6 pt-0 mt-auto">
-                  <Button className="w-full" asChild>
-                    <Link href="/signup?plan=professional">Get Started</Link>
+                  <Button className="w-full" disabled>
+                    Coming soon
                   </Button>
                 </div>
               </Card>
@@ -312,9 +371,14 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle>Enterprise</CardTitle>
                   <div className="text-4xl font-bold">
-                    $99<span className="text-sm font-normal text-muted-foreground">/month</span>
+                    $99
+                    <span className="text-sm font-normal text-muted-foreground">
+                      /month
+                    </span>
                   </div>
-                  <CardDescription>For large organizations with advanced needs.</CardDescription>
+                  <CardDescription>
+                    For large organizations with advanced needs.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <ul className="grid gap-2">
@@ -345,8 +409,8 @@ export default function Home() {
                   </ul>
                 </CardContent>
                 <div className="p-6 pt-0 mt-auto">
-                  <Button className="w-full" asChild>
-                    <Link href="/signup?plan=enterprise">Get Started</Link>
+                  <Button className="w-full" disabled>
+                    Coming soon
                   </Button>
                 </div>
               </Card>
@@ -354,11 +418,16 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-muted/50">
+        <section
+          id="testimonials"
+          className="w-full py-12 md:py-24 lg:py-32 bg-muted/50"
+        >
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">What Our Customers Say</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                  What Our Customers Say
+                </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   Trusted by businesses of all sizes around the world.
                 </p>
@@ -377,13 +446,16 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="font-semibold">Sarah Johnson</p>
-                      <p className="text-sm text-muted-foreground">Marketing Director, TechCorp</p>
+                      <p className="text-sm text-muted-foreground">
+                        Marketing Director, TechCorp
+                      </p>
                     </div>
                   </div>
                   <div className="mt-4">
                     <p className="text-muted-foreground">
-                      "EasyAccessQR has transformed our marketing campaigns. The analytics provide invaluable insights,
-                      and the custom designs match our brand perfectly."
+                      "EasyAccessQR has transformed our marketing campaigns. The
+                      analytics provide invaluable insights, and the custom
+                      designs match our brand perfectly."
                     </p>
                   </div>
                 </CardContent>
@@ -400,13 +472,17 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="font-semibold">Michael Chen</p>
-                      <p className="text-sm text-muted-foreground">Small Business Owner</p>
+                      <p className="text-sm text-muted-foreground">
+                        Small Business Owner
+                      </p>
                     </div>
                   </div>
                   <div className="mt-4">
                     <p className="text-muted-foreground">
-                      "As a small business owner, I needed an affordable solution that still looked professional.
-                      EasyAccessQR delivers exactly that, plus the analytics help me understand my customers better."
+                      "As a small business owner, I needed an affordable
+                      solution that still looked professional. EasyAccessQR
+                      delivers exactly that, plus the analytics help me
+                      understand my customers better."
                     </p>
                   </div>
                 </CardContent>
@@ -423,13 +499,16 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="font-semibold">Emily Rodriguez</p>
-                      <p className="text-sm text-muted-foreground">Event Coordinator, EventPro</p>
+                      <p className="text-sm text-muted-foreground">
+                        Event Coordinator, EventPro
+                      </p>
                     </div>
                   </div>
                   <div className="mt-4">
                     <p className="text-muted-foreground">
-                      "We use EasyAccessQR for all our events now. Being able to track when and where people scan our
-                      codes has helped us optimize our event layouts and marketing materials."
+                      "We use EasyAccessQR for all our events now. Being able to
+                      track when and where people scan our codes has helped us
+                      optimize our event layouts and marketing materials."
                     </p>
                   </div>
                 </CardContent>
@@ -457,32 +536,42 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <p>
-                    Our system generates a unique tracking URL for each QR code. When someone scans the code, they're
-                    directed through our secure servers (which record anonymous data like location, device type, and
-                    time) before being seamlessly redirected to your destination URL.
+                    Our system generates a unique tracking URL for each QR code.
+                    When someone scans the code, they're directed through our
+                    secure servers (which record anonymous data like location,
+                    device type, and time) before being seamlessly redirected to
+                    your destination URL.
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle>Can I update my QR code after creating it?</CardTitle>
+                  <CardTitle>
+                    Can I update my QR code after creating it?
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p>
-                    Yes! With our dynamic QR codes, you can change the destination URL anytime without needing to
-                    reprint or redistribute your QR code. This is perfect for campaigns, menus, or any situation where
-                    the content might need updating.
+                    Yes! With our dynamic QR codes, you can change the
+                    destination URL anytime without needing to reprint or
+                    redistribute your QR code. This is perfect for campaigns,
+                    menus, or any situation where the content might need
+                    updating.
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle>Are there limits to how many scans my QR codes can receive?</CardTitle>
+                  <CardTitle>
+                    Are there limits to how many scans my QR codes can receive?
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p>
-                    No, there are no scan limits on any of our plans. Your QR codes can be scanned as many times as
-                    needed. The only limits are on the number of unique QR codes you can create, which varies by plan.
+                    No, there are no scan limits on any of our plans. Your QR
+                    codes can be scanned as many times as needed. The only
+                    limits are on the number of unique QR codes you can create,
+                    which varies by plan.
                   </p>
                 </CardContent>
               </Card>
@@ -492,9 +581,10 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <p>
-                    Our QR codes are highly customizable. You can change colors, add your logo, adjust the shape of the
-                    code elements, and choose from various patterns. All codes are tested to ensure they remain
-                    scannable despite customizations.
+                    Our QR codes are highly customizable. You can change colors,
+                    add your logo, adjust the shape of the code elements, and
+                    choose from various patterns. All codes are tested to ensure
+                    they remain scannable despite customizations.
                   </p>
                 </CardContent>
               </Card>
@@ -504,9 +594,10 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <p>
-                    Yes, all plans include the ability to export your analytics data in CSV format. Professional and
-                    Enterprise plans also support PDF reports and API access for integrating with your existing
-                    analytics tools.
+                    Yes, all plans include the ability to export your analytics
+                    data in CSV format. Professional and Enterprise plans also
+                    support PDF reports and API access for integrating with your
+                    existing analytics tools.
                   </p>
                 </CardContent>
               </Card>
@@ -518,16 +609,17 @@ export default function Home() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Ready to Get Started?</h2>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                  Ready to Get Started?
+                </h2>
                 <p className="max-w-[900px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Create your first custom QR code in minutes and start tracking its performance.
+                  Create your first custom QR code in minutes and start tracking
+                  its performance.
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Button size="lg" variant="secondary" asChild>
-                  <Link href="/signup">
-                    Create Your First QR Code <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
+                <Button size="lg" variant="secondary" disabled>
+                  Coming soon
                 </Button>
               </div>
             </div>
@@ -538,21 +630,32 @@ export default function Home() {
         <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
           <div className="flex items-center gap-2">
             <QrCode className="h-6 w-6" />
-            <p className="text-sm text-muted-foreground">© 2025 EasyAccessQR. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">
+              © 2025 EasyAccessQR. All rights reserved.
+            </p>
           </div>
           <div className="flex gap-4">
-            <Link href="/terms" className="text-sm text-muted-foreground hover:underline">
+            <Link
+              href="/terms"
+              className="text-sm text-muted-foreground hover:underline"
+            >
               Terms
             </Link>
-            <Link href="/privacy" className="text-sm text-muted-foreground hover:underline">
+            <Link
+              href="/privacy"
+              className="text-sm text-muted-foreground hover:underline"
+            >
               Privacy
             </Link>
-            <Link href="/contact" className="text-sm text-muted-foreground hover:underline">
+            <Link
+              href="/contact"
+              className="text-sm text-muted-foreground hover:underline"
+            >
               Contact
             </Link>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }
