@@ -10,7 +10,6 @@ export const metadata = {
   title: 'EasyAccessQR - Custom QR Codes with Analytics',
   description:
     'Create beautiful, customized QR codes and track their performance with our comprehensive analytics dashboard.',
-  generator: 'v0.dev',
 };
 
 export default function RootLayout({
