@@ -16,19 +16,14 @@ describe("absoluteUrl", () => {
 });
 
 describe("buildOgImageUrl", () => {
-	it("builds an OG endpoint URL with query params", () => {
-		const url = new URL(
+	it("returns the canonical OG endpoint path", () => {
+		expect(
 			buildOgImageUrl({
 				page: "home",
 				title: "Easy Access QR",
 				subtitle: "Smart campaigns",
 			}),
-		);
-
-		expect(url.pathname).toBe("/api/og");
-		expect(url.searchParams.get("page")).toBe("home");
-		expect(url.searchParams.get("title")).toBe("Easy Access QR");
-		expect(url.searchParams.get("subtitle")).toBe("Smart campaigns");
+		).toBe("/api/og");
 	});
 });
 

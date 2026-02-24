@@ -26,6 +26,7 @@ import {
 	isHttpDestinationUrl,
 	normalizeQrDestinations,
 } from "@/lib/qr-destinations";
+import { downloadQrAsset } from "@/lib/qr-export";
 import { NativeSelect } from "@/components/ui/native-select";
 
 export type DesignerState = {
@@ -87,6 +88,7 @@ type QRCodeStylingInstance = {
 		name?: string;
 		extension?: "png" | "svg" | "jpeg" | "webp";
 	}) => Promise<void>;
+	getRawData?: (extension?: "png" | "svg" | "jpeg" | "webp") => Promise<unknown>;
 };
 
 type QRCodeStylingConstructor = new (
@@ -791,9 +793,11 @@ function QrDesignerPreview({
 			return;
 		}
 		if (!qrRef.current) return;
-		await qrRef.current.download({
+		await downloadQrAsset({
+			instance: qrRef.current,
 			name: slugify(name) || "easy-access-qr",
 			extension,
+			backgroundColor: designer.backgroundColor,
 		});
 	};
 

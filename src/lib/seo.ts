@@ -120,15 +120,8 @@ export function buildOgImageUrl(options: {
 	title?: string;
 	subtitle?: string;
 }): string {
-	const url = new URL("/api/og", resolveSiteUrl());
-	url.searchParams.set("page", options.page ?? "home");
-	if (options.title) {
-		url.searchParams.set("title", options.title.slice(0, 70));
-	}
-	if (options.subtitle) {
-		url.searchParams.set("subtitle", options.subtitle.slice(0, 120));
-	}
-	return url.toString();
+	void options;
+	return "/api/og";
 }
 
 export function buildPageSeo(options: SeoOptions): {
@@ -164,8 +157,8 @@ export function buildPageSeo(options: SeoOptions): {
 			{ property: "og:url", content: canonical },
 			{ property: "og:image", content: ogImage },
 			{ property: "og:image:type", content: "image/png" },
-			{ property: "og:image:width", content: "1400" },
-			{ property: "og:image:height", content: "735" },
+			{ property: "og:image:width", content: "1200" },
+			{ property: "og:image:height", content: "630" },
 			{
 				property: "og:image:alt",
 				content: `${options.title} preview image`,

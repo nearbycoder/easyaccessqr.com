@@ -5,31 +5,36 @@ type OgPage = "home" | "docs" | "privacy" | "terms";
 
 const themes: Record<
 	OgPage,
-	{ label: string; title: string; subtitle: string; accent: string }
+	{
+		label: string;
+		title: string;
+		subtitle: string;
+		accent: string;
+	}
 > = {
 	home: {
 		label: "Easy Access QR",
-		title: "Create. Track. Optimize.",
+		title: "QR campaigns, managed clearly.",
 		subtitle: "Dynamic QR code creation and scan analytics for organizations.",
-		accent: "#22d3ee",
+		accent: "#de6346",
 	},
 	docs: {
-		label: "Developer",
+		label: "Easy Access QR",
 		title: "Api reference",
 		subtitle: "Use API keys to automate QR creation and scan reporting.",
-		accent: "#facc15",
+		accent: "#3f8f8c",
 	},
 	privacy: {
-		label: "Legal",
+		label: "Easy Access QR",
 		title: "Privacy policy",
 		subtitle: "How Easy Access QR handles data and security.",
-		accent: "#a3e635",
+		accent: "#3f8f8c",
 	},
 	terms: {
-		label: "Legal",
+		label: "Easy Access QR",
 		title: "Terms of service",
 		subtitle: "Rules and responsibilities for using Easy Access QR.",
-		accent: "#f97316",
+		accent: "#3f8f8c",
 	},
 };
 
@@ -51,40 +56,177 @@ function sanitizeText(
 	return trimmed.slice(0, maxLength);
 }
 
-function escapeXml(value: string): string {
-	return value
-		.replaceAll("&", "&amp;")
-		.replaceAll("<", "&lt;")
-		.replaceAll(">", "&gt;")
-		.replaceAll('"', "&quot;")
-		.replaceAll("'", "&apos;");
-}
-
-function buildSvg(
+function buildOgImage(
 	label: string,
 	title: string,
 	subtitle: string,
 	accent: string,
+	qrImageUrl: string,
 ) {
-	return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="735" viewBox="0 0 1400 735" role="img" aria-label="${escapeXml(title)}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="100%" stop-color="#000000" />
-    </linearGradient>
-  </defs>
-  <rect width="1400" height="735" fill="url(#bg)" />
-  <text x="70" y="100" fill="${escapeXml(accent)}" font-size="28" font-family="Menlo, Monaco, Consolas, monospace" font-weight="700">${escapeXml(label)}</text>
-  <text x="70" y="300" fill="#f8fafc" font-size="96" font-family="Menlo, Monaco, Consolas, monospace" font-weight="800">${escapeXml(title)}</text>
-  <text x="70" y="390" fill="#cbd5e1" font-size="40" font-family="Menlo, Monaco, Consolas, monospace" font-weight="500">${escapeXml(subtitle)}</text>
-  <text x="70" y="655" fill="#94a3b8" font-size="28" font-family="Menlo, Monaco, Consolas, monospace" font-weight="700">easyaccessqr.com</text>
-</svg>`;
+	return (
+		<div
+			style={{
+				width: "100%",
+				height: "100%",
+				display: "flex",
+				position: "relative",
+				background: "linear-gradient(140deg, #1f2427 0%, #192126 100%)",
+				fontFamily: "Inter, Segoe UI, Arial, sans-serif",
+				overflow: "hidden",
+			}}
+		>
+			<div
+				style={{
+					position: "absolute",
+					left: -80,
+					bottom: -110,
+					width: 360,
+					height: 360,
+					borderRadius: 9999,
+					background: "rgba(222, 99, 70, 0.14)",
+				}}
+			/>
+			<div
+				style={{
+					position: "absolute",
+					right: -60,
+					top: -70,
+					width: 300,
+					height: 300,
+					borderRadius: 9999,
+					background: "rgba(63, 143, 140, 0.16)",
+				}}
+			/>
+			<div
+				style={{
+					position: "absolute",
+					left: 44,
+					top: 40,
+					width: 1112,
+					height: 550,
+					borderRadius: 30,
+					border: "2px solid #3d4a4f",
+					background: "linear-gradient(90deg, #242c31 0%, #1f272d 100%)",
+					display: "flex",
+					flexDirection: "column",
+					overflow: "hidden",
+				}}
+			>
+				<div
+					style={{
+						display: "flex",
+						alignItems: "center",
+						padding: "22px 40px",
+						borderBottom: "1px solid #3d4a4f",
+					}}
+				>
+					<div
+						style={{
+							fontSize: 60,
+							fontWeight: 900,
+							color: accent,
+							letterSpacing: "-0.02em",
+						}}
+					>
+						{label}
+					</div>
+				</div>
+				<div
+					style={{
+						display: "flex",
+						flex: 1,
+						alignItems: "center",
+						justifyContent: "space-between",
+						padding: "44px 54px 48px",
+					}}
+				>
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							maxWidth: 650,
+							paddingRight: 26,
+						}}
+					>
+						<h1
+							style={{
+								margin: 0,
+								fontSize: 72,
+								lineHeight: 1.06,
+								fontWeight: 700,
+								letterSpacing: "-0.03em",
+								color: "#edf2f2",
+							}}
+						>
+							{title}
+						</h1>
+						<p
+							style={{
+								margin: "22px 0 0",
+								fontSize: 31,
+								lineHeight: 1.28,
+								fontWeight: 500,
+								letterSpacing: "-0.01em",
+								color: "#b2c0c1",
+							}}
+						>
+							{subtitle}
+						</p>
+						<div
+							style={{
+								display: "flex",
+								marginTop: 28,
+								width: 304,
+								height: 1,
+								background: "rgba(63, 143, 140, 0.55)",
+							}}
+						/>
+						<div
+							style={{
+								display: "flex",
+								marginTop: 14,
+								fontSize: 26,
+								fontWeight: 700,
+								letterSpacing: "-0.005em",
+								color: "#9cd2ce",
+							}}
+						>
+							easyaccessqr.com
+						</div>
+					</div>
+					<div
+						style={{
+							display: "flex",
+							width: 334,
+							height: 334,
+							alignItems: "center",
+							justifyContent: "center",
+							borderRadius: 26,
+							border: "1px solid #46575c",
+							background: "linear-gradient(180deg, #1f272d 0%, #202a2f 100%)",
+						}}
+					>
+						<img
+							src={qrImageUrl}
+							alt="QR preview"
+							style={{
+								width: 300,
+								height: 300,
+								objectFit: "contain",
+								borderRadius: 14,
+							}}
+						/>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 }
 
 const serverHandlers = import.meta.env.SSR
 	? {
 			GET: async ({ request }: { request: Request }) => {
+				const { ImageResponse } = await import("@vercel/og");
 				const url = new URL(request.url);
 				const page = resolvePage(url.searchParams.get("page"));
 				const theme = themes[page];
@@ -98,20 +240,28 @@ const serverHandlers = import.meta.env.SSR
 					theme.subtitle,
 					140,
 				);
-				const svg = buildSvg(theme.label, title, subtitle, theme.accent);
-
-				return withServerSecurityHeaders(
-					new Response(svg, {
+				const qrImageUrl = new URL("/qr.png", url).toString();
+				const image = new ImageResponse(
+					buildOgImage(
+						theme.label,
+						title,
+						subtitle,
+						theme.accent,
+						qrImageUrl,
+					),
+					{
+						width: 1200,
+						height: 630,
 						headers: {
-							"content-type": "image/svg+xml; charset=utf-8",
 							"cache-control": "public, max-age=3600",
 						},
-					}),
-					{
-						request,
-						frameOptions: null,
 					},
 				);
+
+				return withServerSecurityHeaders(image, {
+					request,
+					frameOptions: null,
+				});
 			},
 		}
 	: {};

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { NativeSelect } from "@/components/ui/native-select";
 import { authClient } from "@/lib/auth-client";
+import { downloadQrAsset } from "@/lib/qr-export";
 import {
 	buildHomeStructuredData,
 	buildPageSeo,
@@ -404,6 +405,7 @@ type QRCodeStylingInstance = {
 		name?: string;
 		extension?: "png" | "svg" | "jpeg" | "webp";
 	}) => Promise<void>;
+	getRawData?: (extension?: "png" | "svg" | "jpeg" | "webp") => Promise<unknown>;
 };
 
 type QRCodeStylingConstructor = new (
@@ -555,9 +557,11 @@ function HomepageQrBuilderModal({
 		}
 		setDownloadingExtension(extension);
 		try {
-			await qrRef.current.download({
+			await downloadQrAsset({
+				instance: qrRef.current,
 				name: sanitizeQrFileName(name),
 				extension,
+				backgroundColor,
 			});
 		} catch {
 			toast.error("Failed to download QR code.");

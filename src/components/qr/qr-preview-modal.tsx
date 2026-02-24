@@ -10,8 +10,9 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { slugifyQrName, toAbsoluteUrl } from "@/lib/qr-links";
+import { downloadQrAsset } from "@/lib/qr-export";
 
-type QrDownloadExtension = "png" | "svg" | "jpeg";
+type QrDownloadExtension = "png" | "svg" | "jpeg" | "webp";
 
 type QRCodeStylingInstance = {
 	append: (node: HTMLElement) => void;
@@ -19,6 +20,7 @@ type QRCodeStylingInstance = {
 		name?: string;
 		extension?: QrDownloadExtension;
 	}) => Promise<void>;
+	getRawData?: (extension?: QrDownloadExtension) => Promise<unknown>;
 };
 
 type QRCodeStylingConstructor = new (
@@ -141,9 +143,11 @@ export function QrPreviewModal({
 			return;
 		}
 
-		await qrRef.current.download({
+		await downloadQrAsset({
+			instance: qrRef.current,
 			name: slugifyQrName(name) || "easy-access-qr",
 			extension,
+			backgroundColor: "#ffffff",
 		});
 	};
 
