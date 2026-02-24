@@ -1,0 +1,13 @@
+import { stripeClient } from "@better-auth/stripe/client";
+import { apiKeyClient, organizationClient } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
+
+export const authClient = createAuthClient({
+	plugins: [
+		organizationClient(),
+		apiKeyClient(),
+		stripeClient({
+			subscription: true,
+		}),
+	],
+});

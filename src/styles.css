@@ -1,0 +1,250 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap');
+
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+body {
+  @apply m-0;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: 'DM Sans', Menlo, Monaco, Consolas, monospace;
+}
+
+/* ── Shadcn defaults ─────────────────────── */
+
+:root {
+  --background: oklch(0.985 0.003 90);
+  --foreground: oklch(0.28 0.012 170);
+  --card: oklch(0.995 0.002 95);
+  --card-foreground: oklch(0.28 0.012 170);
+  --popover: oklch(0.995 0.002 95);
+  --popover-foreground: oklch(0.28 0.012 170);
+  --primary: oklch(0.56 0.088 192);
+  --primary-foreground: oklch(0.98 0.004 95);
+  --secondary: oklch(0.96 0.006 170);
+  --secondary-foreground: oklch(0.34 0.012 170);
+  --muted: oklch(0.96 0.004 170);
+  --muted-foreground: oklch(0.52 0.01 170);
+  --accent: oklch(0.56 0.088 192);
+  --accent-foreground: oklch(0.98 0.004 95);
+  --destructive: oklch(0.61 0.19 29.3);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.89 0.006 170);
+  --input: oklch(0.995 0.002 95);
+  --ring: oklch(0.56 0.088 192);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.75rem;
+  --sidebar: oklch(0.975 0.003 95);
+  --sidebar-foreground: oklch(0.31 0.012 170);
+  --sidebar-primary: oklch(0.56 0.088 192);
+  --sidebar-primary-foreground: oklch(0.98 0.004 95);
+  --sidebar-accent: oklch(0.96 0.006 170);
+  --sidebar-accent-foreground: oklch(0.34 0.012 170);
+  --sidebar-border: oklch(0.89 0.006 170);
+  --sidebar-ring: oklch(0.56 0.088 192);
+}
+
+.dark {
+  --background: oklch(0.24 0.015 220);
+  --foreground: oklch(0.94 0.008 220);
+  --card: oklch(0.27 0.015 220);
+  --card-foreground: oklch(0.94 0.008 220);
+  --popover: oklch(0.27 0.015 220);
+  --popover-foreground: oklch(0.94 0.008 220);
+  --primary: oklch(0.65 0.09 190);
+  --primary-foreground: oklch(0.18 0.01 220);
+  --secondary: oklch(0.3 0.015 220);
+  --secondary-foreground: oklch(0.9 0.01 220);
+  --muted: oklch(0.3 0.015 220);
+  --muted-foreground: oklch(0.75 0.01 220);
+  --accent: oklch(0.65 0.09 190);
+  --accent-foreground: oklch(0.18 0.01 220);
+  --destructive: oklch(0.65 0.18 28);
+  --destructive-foreground: oklch(0.95 0.02 88);
+  --border: oklch(0.38 0.013 220);
+  --input: oklch(0.31 0.015 220);
+  --ring: oklch(0.65 0.09 190);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.22 0.015 220);
+  --sidebar-foreground: oklch(0.94 0.008 220);
+  --sidebar-primary: oklch(0.65 0.09 190);
+  --sidebar-primary-foreground: oklch(0.18 0.01 220);
+  --sidebar-accent: oklch(0.3 0.015 220);
+  --sidebar-accent-foreground: oklch(0.9 0.01 220);
+  --sidebar-border: oklch(0.38 0.013 220);
+  --sidebar-ring: oklch(0.65 0.09 190);
+}
+
+/* ── Easy Access QR dashboard theme ──────────── */
+.dark {
+  --ds-bg: #1f2427;
+  --ds-fg: #eef2f2;
+  --ds-accent: #3f8f8c;
+  --ds-accent-hover: #357976;
+  --ds-accent-fg: #f7fbfb;
+  --ds-muted: #a2afb0;
+  --ds-muted2: #889596;
+  --ds-muted3: #5a6768;
+  --ds-border: #414b4c;
+  --ds-border-strong: #556263;
+  --ds-surface: #252b2f;
+  --ds-surface2: #2d353a;
+  --ds-input-bg: #242b2e;
+  --ds-text-secondary: #d4dddd;
+  --ds-text-tertiary: #a6b3b4;
+  --ds-selection-bg: #3f8f8c;
+  --ds-selection-fg: #f7fbfb;
+}
+
+.light {
+  --ds-bg: #f6f7f6;
+  --ds-fg: #1f2522;
+  --ds-accent: #2f7f7c;
+  --ds-accent-hover: #256b68;
+  --ds-accent-fg: #f7fbfb;
+  --ds-muted: #5f6e67;
+  --ds-muted2: #7b8883;
+  --ds-muted3: #aeb9b4;
+  --ds-border: #d3dbd6;
+  --ds-border-strong: #c2ccc7;
+  --ds-surface: #ffffff;
+  --ds-surface2: #f0f4f2;
+  --ds-input-bg: #ffffff;
+  --ds-text-secondary: #33403b;
+  --ds-text-tertiary: #66726e;
+  --ds-selection-bg: #d3ecea;
+  --ds-selection-fg: #153736;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Easy Access QR theme tokens */
+  --color-ds-bg: var(--ds-bg);
+  --color-ds-fg: var(--ds-fg);
+  --color-ds-accent: var(--ds-accent);
+  --color-ds-accent-hover: var(--ds-accent-hover);
+  --color-ds-accent-fg: var(--ds-accent-fg);
+  --color-ds-muted: var(--ds-muted);
+  --color-ds-muted2: var(--ds-muted2);
+  --color-ds-muted3: var(--ds-muted3);
+  --color-ds-border: var(--ds-border);
+  --color-ds-border-strong: var(--ds-border-strong);
+  --color-ds-surface: var(--ds-surface);
+  --color-ds-surface2: var(--ds-surface2);
+  --color-ds-input-bg: var(--ds-input-bg);
+  --color-ds-text-secondary: var(--ds-text-secondary);
+  --color-ds-text-tertiary: var(--ds-text-tertiary);
+  --color-ds-selection-bg: var(--ds-selection-bg);
+  --color-ds-selection-fg: var(--ds-selection-fg);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-ds-bg text-ds-fg;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: -0.015em;
+  }
+
+  input, textarea, select {
+    border-radius: 0.65rem;
+    border-width: 1px;
+  }
+
+  button {
+    border-radius: 0.65rem;
+  }
+
+  .font-display {
+    font-family: 'Fraunces', serif;
+    letter-spacing: -0.02em;
+  }
+
+  /* Flatten old playful-stack styling across legacy pages */
+  [class*="border-2"],
+  [class*="border-[2px]"],
+  [class*="border-b-2"],
+  [class*="border-t-2"],
+  [class*="border-l-2"],
+  [class*="border-r-2"] {
+    border-width: 1px !important;
+  }
+
+  [class*="shadow-["] {
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08), 0 2px 8px rgba(16, 24, 40, 0.04) !important;
+  }
+
+  .rounded-2xl {
+    border-radius: 0.7rem !important;
+  }
+
+  .rounded-3xl {
+    border-radius: 0.9rem !important;
+  }
+
+  /* Keep legacy white surfaces readable in dark mode while redesign cleanup is in progress. */
+  .dark .bg-white {
+    background-color: var(--ds-input-bg) !important;
+  }
+
+  .dark .hover\:bg-white:hover {
+    background-color: var(--ds-surface2) !important;
+  }
+}
