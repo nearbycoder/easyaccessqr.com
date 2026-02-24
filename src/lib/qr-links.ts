@@ -14,6 +14,15 @@ export function buildQrShortPath(organizationSlug: string, qrSlug: string) {
 	return `/r/${org}/${slug}`;
 }
 
+export function buildQrPublicPreviewPath(
+	organizationSlug: string,
+	qrSlug: string,
+) {
+	const shortPath = buildQrShortPath(organizationSlug, qrSlug);
+	if (!shortPath) return "";
+	return `${shortPath}?view=1`;
+}
+
 export function toAbsoluteUrl(pathOrUrl: string) {
 	if (!pathOrUrl) return "";
 	if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;

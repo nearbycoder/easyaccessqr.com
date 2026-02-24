@@ -6,11 +6,8 @@ import {
 } from "@tanstack/react-router";
 import {
 	BarChart3,
-	Bell,
 	Building2,
 	ChevronDown,
-	Gift,
-	HelpCircle,
 	Home,
 	LogOut,
 	Menu,
@@ -264,27 +261,24 @@ function AppShell({
 						</div>
 
 						<div className="flex items-center gap-1 sm:gap-2">
-							<HeaderIcon icon={Gift} className="hidden sm:inline-flex" />
-							<HeaderIcon icon={HelpCircle} className="hidden sm:inline-flex" />
-							<HeaderIcon icon={Bell} />
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<button
 										type="button"
-										className="inline-flex items-center gap-2 border border-ds-border bg-white px-2 py-1.5 text-left sm:gap-3 sm:px-3"
+										className="inline-flex items-center gap-2 rounded-xl border border-ds-border bg-white px-2 py-1 text-left sm:gap-2.5 sm:px-2.5"
 									>
-										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-ds-surface2 text-xs font-extrabold text-ds-accent">
+										<div className="flex h-7 w-7 items-center justify-center rounded-full bg-ds-surface2 text-[11px] font-extrabold text-ds-accent sm:h-8 sm:w-8 sm:text-xs">
 											{session.user.name?.charAt(0) ?? "U"}
 										</div>
 										<div className="min-w-0 hidden sm:block">
-											<div className="truncate text-sm font-semibold">
+											<div className="truncate text-[13px] font-semibold">
 												{session.user.name}
 											</div>
-											<div className="truncate text-xs text-ds-text-tertiary">
+											<div className="truncate text-[11px] text-ds-text-tertiary">
 												{session.user.email}
 											</div>
 										</div>
-										<ChevronDown className="h-4 w-4 text-ds-text-tertiary" />
+										<ChevronDown className="h-3.5 w-3.5 text-ds-text-tertiary" />
 									</button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent
@@ -295,7 +289,8 @@ function AppShell({
 										onSelect={() => {
 											void handleSignOut();
 										}}
-										className="cursor-pointer text-red-600"
+										variant="destructive"
+										className="cursor-pointer"
 									>
 										<LogOut className="h-4 w-4" />
 										Sign out
@@ -329,23 +324,6 @@ function AppShell({
 				</main>
 			</div>
 		</div>
-	);
-}
-
-function HeaderIcon({
-	icon: Icon,
-	className,
-}: {
-	icon: React.ComponentType<{ className?: string }>;
-	className?: string;
-}) {
-	return (
-		<button
-			type="button"
-			className={`inline-flex h-9 w-9 items-center justify-center border border-transparent text-ds-text-tertiary transition-colors hover:border-ds-border hover:bg-ds-surface2 ${className ?? ""}`}
-		>
-			<Icon className="h-4 w-4" />
-		</button>
 	);
 }
 

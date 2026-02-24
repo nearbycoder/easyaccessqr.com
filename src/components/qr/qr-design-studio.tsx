@@ -26,6 +26,7 @@ import {
 	isHttpDestinationUrl,
 	normalizeQrDestinations,
 } from "@/lib/qr-destinations";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export type DesignerState = {
 	size: number;
@@ -47,6 +48,7 @@ export type DesignerState = {
 export type QrDesignStudioSubmit = {
 	name: string;
 	destinationUrl: string;
+	isPublic: boolean;
 	destinations: Array<{
 		id?: string;
 		label?: string;
@@ -60,6 +62,7 @@ type QrDesignStudioProps = {
 	mode: "create" | "edit";
 	initialName?: string;
 	initialDestinationUrl?: string;
+	initialIsPublic?: boolean;
 	initialDestinations?: Array<{
 		id?: string;
 		label?: string | null;
@@ -114,7 +117,7 @@ const MIN_QUIET_ZONE = 8;
 const MAX_QUIET_ZONE = 30;
 const MIN_PREVIEW_SIZE = 300;
 const MAX_PREVIEW_SIZE = 520;
-const MAX_LOGO_SIZE = 0.22;
+const MAX_LOGO_SIZE = 0.3;
 const MIN_CONTRAST_RATIO = 4.5;
 
 export const DEFAULT_DESIGNER: DesignerState = {
@@ -138,12 +141,14 @@ export function QrDesignStudio({
 	mode,
 	initialName = "",
 	initialDestinationUrl = "",
+	initialIsPublic = false,
 	initialDestinations,
 	trackingUrl,
 	submitPending = false,
 	onSubmit,
 }: QrDesignStudioProps) {
 	const [name, setName] = useState(initialName);
+	const [isPublic, setIsPublic] = useState(initialIsPublic);
 	const [destinations, setDestinations] = useState<DestinationDraft[]>(() =>
 		createInitialDestinationDrafts(initialDestinations, initialDestinationUrl),
 	);
@@ -192,6 +197,10 @@ export function QrDesignStudio({
 	}, [initialName]);
 
 	useEffect(() => {
+		setIsPublic(initialIsPublic);
+	}, [initialIsPublic]);
+
+	useEffect(() => {
 		setDestinations(
 			createInitialDestinationDrafts(
 				initialDestinations,
@@ -223,6 +232,7 @@ export function QrDesignStudio({
 		await onSubmit({
 			name: name.trim(),
 			destinationUrl: primaryDestinationUrl,
+			isPublic,
 			destinations: normalizedDestinations.map((destination) => ({
 				id: destination.id,
 				label: destination.label ?? undefined,
@@ -250,6 +260,9 @@ export function QrDesignStudio({
 						value={name}
 						onChange={(event) => setName(event.target.value)}
 						placeholder="Campaign landing"
+						autoComplete="off"
+						data-1p-ignore="true"
+						data-lpignore="true"
 						className="h-12 min-w-0 rounded-xl border border-ds-border bg-ds-input-bg px-4 text-base text-ds-fg outline-none transition-colors placeholder:text-ds-text-tertiary focus:border-ds-accent"
 					/>
 					<div className="flex flex-wrap gap-2">
@@ -289,6 +302,26 @@ export function QrDesignStudio({
 							Normalize to 100 percent
 						</button>
 					</div>
+				</div>
+
+				<div className="mt-4 rounded-xl border border-ds-border bg-ds-input-bg px-3 py-3">
+					<label className="flex items-start gap-3">
+						<input
+							type="checkbox"
+							checked={isPublic}
+							onChange={(event) => setIsPublic(event.target.checked)}
+							className="mt-0.5 h-4 w-4 accent-ds-accent"
+						/>
+						<span className="min-w-0">
+							<span className="block text-sm font-semibold text-ds-fg">
+								Public QR page
+							</span>
+							<span className="block text-xs text-ds-text-tertiary">
+								Anyone with the public page link can view this QR code without
+								signing in.
+							</span>
+						</span>
+					</label>
 				</div>
 
 				<div className="mt-4 rounded-xl border border-ds-border bg-ds-input-bg p-3">
@@ -336,17 +369,14 @@ export function QrDesignStudio({
 									<input
 										type="number"
 										min={1}
-										max={100}
+										max={Math.max(1, 100 - (destinations.length - 1))}
 										value={destination.weight}
 										onChange={(event) => {
-											const nextWeight = normalizeWeightInput(
-												Number(event.target.value),
-											);
 											setDestinations((current) =>
-												current.map((row) =>
-													row.id === destination.id
-														? { ...row, weight: nextWeight }
-														: row,
+												rebalanceDestinationDraftsForEditedDestination(
+													current,
+													destination.id,
+													Number(event.target.value),
 												),
 											);
 										}}
@@ -366,7 +396,7 @@ export function QrDesignStudio({
 										})
 									}
 									disabled={destinations.length <= 1}
-									className="inline-flex h-10 items-center justify-center rounded-lg border border-ds-border bg-ds-input-bg px-2 text-ds-text-secondary transition-colors hover:border-red-300 hover:text-red-600 disabled:opacity-60"
+									className="inline-flex h-10 items-center justify-center rounded-lg border border-ds-border bg-ds-input-bg px-2 text-ds-text-secondary transition-colors hover:border-destructive/45 hover:text-destructive disabled:opacity-60"
 								>
 									<Trash2 className="h-4 w-4" />
 								</button>
@@ -472,7 +502,7 @@ export function QrDesignStudio({
 										),
 									}))
 								}
-								className="mt-2 w-full"
+								className="mt-2 w-full accent-ds-accent"
 							/>
 							<div className="mt-1 text-xs font-semibold text-ds-fg">
 								{designer.margin}px
@@ -496,7 +526,7 @@ export function QrDesignStudio({
 										),
 									}))
 								}
-								className="mt-2 w-full"
+								className="mt-2 w-full accent-ds-accent"
 							/>
 							<div className="mt-1 text-xs font-semibold text-ds-fg">
 								{designer.size}px
@@ -571,7 +601,7 @@ export function QrDesignStudio({
 											hideBackgroundDots: event.target.checked,
 										}))
 									}
-									className="h-4 w-4"
+									className="h-4 w-4 accent-ds-accent"
 								/>
 								Mask behind logo
 							</label>
@@ -594,7 +624,7 @@ export function QrDesignStudio({
 										),
 									}))
 								}
-								className="mt-2 w-full"
+								className="mt-2 w-full accent-ds-accent"
 							/>
 							<div className="mt-1 text-xs font-semibold text-ds-fg">
 								{Math.round(designer.logoSize * 100)}%
@@ -903,6 +933,59 @@ function rebalanceDestinationDrafts(drafts: DestinationDraft[]) {
 	}));
 }
 
+function rebalanceDestinationDraftsForEditedDestination(
+	drafts: DestinationDraft[],
+	editedId: string,
+	rawWeight: number,
+) {
+	if (drafts.length === 0) return drafts;
+
+	const editedIndex = drafts.findIndex((draft) => draft.id === editedId);
+	if (editedIndex === -1) return drafts;
+	if (drafts.length === 1) {
+		return drafts.map((draft, index) => ({
+			...draft,
+			weight: index === editedIndex ? 100 : draft.weight,
+		}));
+	}
+
+	const normalizedCurrent = drafts.map((draft) =>
+		normalizeWeightInput(draft.weight),
+	);
+	const otherCount = drafts.length - 1;
+	const requestedWeight = normalizeWeightInput(rawWeight);
+	const clampedWeight = Math.max(
+		1,
+		Math.min(100 - otherCount, requestedWeight),
+	);
+	const remainingWeight = 100 - clampedWeight;
+	const minimumOtherWeight = otherCount;
+	const redistributableWeight = Math.max(
+		0,
+		remainingWeight - minimumOtherWeight,
+	);
+	const otherIndices = normalizedCurrent
+		.map((_, index) => index)
+		.filter((index) => index !== editedIndex);
+	const otherCurrentExtras = otherIndices.map((index) =>
+		Math.max(0, normalizedCurrent[index] - 1),
+	);
+	const redistributedExtras = distributeIntegerByWeight(
+		redistributableWeight,
+		otherCurrentExtras,
+	);
+	const nextWeights = normalizedCurrent.slice();
+	nextWeights[editedIndex] = clampedWeight;
+	otherIndices.forEach((index, position) => {
+		nextWeights[index] = 1 + (redistributedExtras[position] ?? 0);
+	});
+
+	return drafts.map((draft, index) => ({
+		...draft,
+		weight: nextWeights[index] ?? 1,
+	}));
+}
+
 function normalizeIntegerPercentWeights(weights: number[]) {
 	const total = weights.reduce((sum, weight) => sum + weight, 0);
 	if (weights.length === 0) return [];
@@ -936,6 +1019,48 @@ function normalizeIntegerPercentWeights(weights: number[]) {
 	return floors;
 }
 
+function distributeIntegerByWeight(totalUnits: number, weights: number[]) {
+	if (weights.length === 0 || totalUnits <= 0) {
+		return weights.map(() => 0);
+	}
+
+	const sanitizedWeights = weights.map((weight) =>
+		Number.isFinite(weight) ? Math.max(0, weight) : 0,
+	);
+	const weightTotal = sanitizedWeights.reduce((sum, weight) => sum + weight, 0);
+
+	if (weightTotal <= 0) {
+		const even = Math.floor(totalUnits / weights.length);
+		let remainder = totalUnits - even * weights.length;
+		return weights.map(() => {
+			if (remainder > 0) {
+				remainder -= 1;
+				return even + 1;
+			}
+			return even;
+		});
+	}
+
+	const scaled = sanitizedWeights.map(
+		(weight) => (weight / weightTotal) * totalUnits,
+	);
+	const floors = scaled.map((value) => Math.floor(value));
+	let remainder = totalUnits - floors.reduce((sum, value) => sum + value, 0);
+	const rankedIndices = scaled
+		.map((value, index) => ({ index, decimal: value - floors[index] }))
+		.sort((a, b) => b.decimal - a.decimal || a.index - b.index);
+
+	while (remainder > 0 && rankedIndices.length > 0) {
+		for (const ranked of rankedIndices) {
+			if (remainder <= 0) break;
+			floors[ranked.index] += 1;
+			remainder -= 1;
+		}
+	}
+
+	return floors;
+}
+
 function SelectField({
 	label,
 	value,
@@ -950,17 +1075,17 @@ function SelectField({
 	return (
 		<div className="min-w-0 rounded-xl border border-ds-border bg-ds-surface2/45 px-3 py-2">
 			<div className="mb-1 text-xs text-ds-text-tertiary">{label}</div>
-			<select
+			<NativeSelect
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
-				className="h-9 min-w-0 w-full rounded-lg border border-ds-border bg-ds-input-bg px-2 text-sm text-ds-fg outline-none transition-colors focus:border-ds-accent"
+				className="h-9 min-w-0 rounded-lg border border-ds-border bg-ds-input-bg px-2 text-sm text-ds-fg outline-none transition-colors focus:border-ds-accent"
 			>
 				{options.map((option) => (
 					<option key={option.value} value={option.value}>
 						{option.label}
 					</option>
 				))}
-			</select>
+			</NativeSelect>
 		</div>
 	);
 }

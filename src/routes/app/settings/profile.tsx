@@ -59,7 +59,7 @@ function ProfileSettingsPage() {
 	};
 
 	return (
-		<div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:p-6">
+		<div className="mx-auto w-full max-w-[1320px]">
 			{userId ? (
 				<Link
 					to="/app/user/$userId"

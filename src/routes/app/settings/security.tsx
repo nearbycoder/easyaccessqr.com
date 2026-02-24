@@ -54,7 +54,7 @@ function SecuritySettingsPage() {
 	};
 
 	return (
-		<div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:p-6">
+		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-8">
 				<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
 					Security

@@ -1,8 +1,13 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, gte, inArray, lte, lt, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, lte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { qrCode, qrScanEvent } from "@/db/schema";
+import {
+	getPlanDisplayName,
+	maxHistoryDays,
+	resolveOrganizationPlanLimits,
+} from "@/lib/plan-limits";
 import {
 	MAX_QR_DESTINATIONS,
 	normalizeQrDestinations,
@@ -17,17 +22,36 @@ const analyticsRangeDaysSchema = z.union([
 	z.literal(90),
 ]);
 
+function isSupportedHttpUrl(value: string): boolean {
+	try {
+		const parsed = new URL(value.trim());
+		if (parsed.username || parsed.password) return false;
+		return parsed.protocol === "http:" || parsed.protocol === "https:";
+	} catch {
+		return false;
+	}
+}
+
+const httpUrlSchema = z
+	.string()
+	.trim()
+	.min(1)
+	.max(2048)
+	.refine((value) => isSupportedHttpUrl(value), {
+		message: "URL must be a valid HTTP or HTTPS URL.",
+	});
+
 const qrDestinationSchema = z.object({
 	id: z.string().trim().min(1).max(64).optional(),
 	label: z.string().trim().max(80).optional(),
-	url: z.string().url().max(2048),
+	url: httpUrlSchema,
 	weight: z.number().int().min(1).max(100),
 });
 
 const qrCreateSchema = z
 	.object({
 		name: z.string().trim().min(1).max(80),
-		destinationUrl: z.string().url().max(2048).optional(),
+		destinationUrl: httpUrlSchema.optional(),
 		destinations: z
 			.array(qrDestinationSchema)
 			.min(1)
@@ -41,6 +65,7 @@ const qrCreateSchema = z
 			.regex(/^[a-z0-9-]+$/)
 			.optional(),
 		tags: z.array(z.string().trim().min(1).max(30)).max(12).optional(),
+		isPublic: z.boolean().optional(),
 	})
 	.superRefine((value, ctx) => {
 		const hasDestinationUrl = Boolean(value.destinationUrl?.trim());
@@ -57,7 +82,7 @@ const qrCreateSchema = z
 const qrUpdateSchema = z.object({
 	id: z.number().int().positive(),
 	name: z.string().trim().min(1).max(80).optional(),
-	destinationUrl: z.string().url().max(2048).optional(),
+	destinationUrl: httpUrlSchema.optional(),
 	destinations: z
 		.array(qrDestinationSchema)
 		.min(1)
@@ -71,6 +96,7 @@ const qrUpdateSchema = z.object({
 		.regex(/^[a-z0-9-]+$/)
 		.optional(),
 	isActive: z.boolean().optional(),
+	isPublic: z.boolean().optional(),
 	tags: z.array(z.string().trim().min(1).max(30)).max(12).optional(),
 });
 
@@ -99,6 +125,52 @@ function toDestinationUrlKey(value: string | null | undefined) {
 	const trimmed = value.trim();
 	if (!trimmed) return null;
 	return trimmed.toLowerCase();
+}
+
+async function countActiveQrCodesByOrganization(
+	organizationId: string,
+): Promise<number> {
+	const rows = await db
+		.select({ count: count() })
+		.from(qrCode)
+		.where(
+			and(eq(qrCode.organizationId, organizationId), eq(qrCode.isActive, true)),
+		);
+	return rows[0]?.count ?? 0;
+}
+
+async function assertCanUseAdditionalActiveQrCode({
+	organizationId,
+	userId,
+}: {
+	organizationId: string;
+	userId: string;
+}) {
+	const plan = await resolveOrganizationPlanLimits({
+		organizationId,
+		userId,
+	});
+	const limit = plan.limits.activeQrCodes;
+	if (limit < 0) return;
+
+	const activeCount = await countActiveQrCodesByOrganization(organizationId);
+	if (activeCount >= limit) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message: `${getPlanDisplayName(plan.plan)} allows up to ${limit} active QR codes. Pause an active code or upgrade to activate more.`,
+		});
+	}
+}
+
+function isMissingDestinationColumnsError(error: unknown) {
+	if (!error || typeof error !== "object") return false;
+	const maybeError = error as { message?: string; code?: string };
+	if (maybeError.code === "42703") return true;
+	const message = (maybeError.message ?? "").toLowerCase();
+	return (
+		message.includes("selected_destination_id") ||
+		message.includes("selected_destination_url")
+	);
 }
 
 function resolveDestinationPayload(input: {
@@ -212,6 +284,10 @@ export const qrCodesRouter = {
 	create: orgProcedure
 		.input(qrCreateSchema)
 		.mutation(async ({ ctx, input }) => {
+			await assertCanUseAdditionalActiveQrCode({
+				organizationId: ctx.organizationId,
+				userId: ctx.session.user.id,
+			});
 			const slug = await resolveUniqueSlug(
 				ctx.organizationId,
 				input.slug ?? input.name,
@@ -230,6 +306,7 @@ export const qrCodesRouter = {
 					destinationUrl: destinationPayload.destinationUrl,
 					destinations: destinationPayload.destinations,
 					slug,
+					isPublic: input.isPublic ?? false,
 					tags: (input.tags ?? []).map((tag) => tag.trim()).filter(Boolean),
 				})
 				.returning({ id: qrCode.id });
@@ -251,6 +328,7 @@ export const qrCodesRouter = {
 				columns: {
 					id: true,
 					slug: true,
+					isActive: true,
 					destinationUrl: true,
 					destinations: true,
 				},
@@ -277,6 +355,12 @@ export const qrCodesRouter = {
 						fallbackDestinations: current.destinations,
 					})
 				: null;
+			if (input.isActive === true && !current.isActive) {
+				await assertCanUseAdditionalActiveQrCode({
+					organizationId: ctx.organizationId,
+					userId: ctx.session.user.id,
+				});
+			}
 
 			await db
 				.update(qrCode)
@@ -289,6 +373,7 @@ export const qrCodesRouter = {
 							}
 						: {}),
 					...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+					...(input.isPublic !== undefined ? { isPublic: input.isPublic } : {}),
 					...(input.tags !== undefined
 						? {
 								tags: input.tags.map((tag) => tag.trim()).filter(Boolean),
@@ -333,7 +418,7 @@ export const qrCodesRouter = {
 				userAgent: z.string().max(2048).optional(),
 				ipHash: z.string().max(128).optional(),
 				selectedDestinationId: z.string().trim().max(64).optional(),
-				selectedDestinationUrl: z.string().url().max(2048).optional(),
+				selectedDestinationUrl: httpUrlSchema.optional(),
 				country: z.string().max(80).optional(),
 				city: z.string().max(80).optional(),
 				deviceType: z
@@ -365,22 +450,43 @@ export const qrCodesRouter = {
 			}
 
 			const now = new Date();
-			const inserted = await db
-				.insert(qrScanEvent)
-				.values({
-					qrCodeId: target.id,
-					organizationId: ctx.organizationId,
-					scannedAt: now,
-					referrer: input.referrer,
-					userAgent: input.userAgent,
-					ipHash: input.ipHash,
-					selectedDestinationId: input.selectedDestinationId,
-					selectedDestinationUrl: input.selectedDestinationUrl,
-					country: input.country,
-					city: input.city,
-					deviceType: input.deviceType ?? "unknown",
-				})
-				.returning({ id: qrScanEvent.id });
+			let inserted: Array<{ id: number }>;
+			try {
+				inserted = await db
+					.insert(qrScanEvent)
+					.values({
+						qrCodeId: target.id,
+						organizationId: ctx.organizationId,
+						scannedAt: now,
+						referrer: input.referrer,
+						userAgent: input.userAgent,
+						ipHash: input.ipHash,
+						selectedDestinationId: input.selectedDestinationId,
+						selectedDestinationUrl: input.selectedDestinationUrl,
+						country: input.country,
+						city: input.city,
+						deviceType: input.deviceType ?? "unknown",
+					})
+					.returning({ id: qrScanEvent.id });
+			} catch (error) {
+				if (!isMissingDestinationColumnsError(error)) {
+					throw error;
+				}
+				inserted = await db
+					.insert(qrScanEvent)
+					.values({
+						qrCodeId: target.id,
+						organizationId: ctx.organizationId,
+						scannedAt: now,
+						referrer: input.referrer,
+						userAgent: input.userAgent,
+						ipHash: input.ipHash,
+						country: input.country,
+						city: input.city,
+						deviceType: input.deviceType ?? "unknown",
+					})
+					.returning({ id: qrScanEvent.id });
+			}
 
 			await db
 				.update(qrCode)
@@ -406,11 +512,19 @@ export const qrCodesRouter = {
 			}),
 		)
 		.query(async ({ ctx, input }) => {
+			const plan = await resolveOrganizationPlanLimits({
+				organizationId: ctx.organizationId,
+				userId: ctx.session.user.id,
+			});
+			const effectiveRangeDays = maxHistoryDays(
+				plan.limits.historyDays,
+				input.rangeDays,
+			);
 			const endDate = new Date();
 			endDate.setHours(23, 59, 59, 999);
 			const startDate = new Date(endDate);
 			startDate.setHours(0, 0, 0, 0);
-			startDate.setDate(startDate.getDate() - input.rangeDays + 1);
+			startDate.setDate(startDate.getDate() - effectiveRangeDays + 1);
 
 			const codeConditions = [eq(qrCode.organizationId, ctx.organizationId)];
 			if (input.qrCodeId) {
@@ -448,6 +562,10 @@ export const qrCodesRouter = {
 						startDate: toIsoDate(startDate),
 						endDate: toIsoDate(endDate),
 					},
+					range: {
+						requestedDays: input.rangeDays,
+						appliedDays: effectiveRangeDays,
+					},
 					totals: {
 						qrCodes: 0,
 						activeQrCodes: 0,
@@ -460,22 +578,51 @@ export const qrCodesRouter = {
 			}
 
 			const codeIds = normalizedCodes.map((code) => code.id);
-			const events = await db.query.qrScanEvent.findMany({
-				where: and(
-					eq(qrScanEvent.organizationId, ctx.organizationId),
-					gte(qrScanEvent.scannedAt, startDate),
-					lte(qrScanEvent.scannedAt, endDate),
-					inArray(qrScanEvent.qrCodeId, codeIds),
-				),
-				columns: {
-					id: true,
-					qrCodeId: true,
-					scannedAt: true,
-					selectedDestinationId: true,
-					selectedDestinationUrl: true,
-				},
-				orderBy: [desc(qrScanEvent.scannedAt)],
-			});
+			const queryWhere = and(
+				eq(qrScanEvent.organizationId, ctx.organizationId),
+				gte(qrScanEvent.scannedAt, startDate),
+				lte(qrScanEvent.scannedAt, endDate),
+				inArray(qrScanEvent.qrCodeId, codeIds),
+			);
+
+			let events: Array<{
+				id: number;
+				qrCodeId: number;
+				scannedAt: Date;
+				selectedDestinationId: string | null;
+				selectedDestinationUrl: string | null;
+			}>;
+			try {
+				events = await db.query.qrScanEvent.findMany({
+					where: queryWhere,
+					columns: {
+						id: true,
+						qrCodeId: true,
+						scannedAt: true,
+						selectedDestinationId: true,
+						selectedDestinationUrl: true,
+					},
+					orderBy: [desc(qrScanEvent.scannedAt)],
+				});
+			} catch (error) {
+				if (!isMissingDestinationColumnsError(error)) {
+					throw error;
+				}
+				const legacyEvents = await db.query.qrScanEvent.findMany({
+					where: queryWhere,
+					columns: {
+						id: true,
+						qrCodeId: true,
+						scannedAt: true,
+					},
+					orderBy: [desc(qrScanEvent.scannedAt)],
+				});
+				events = legacyEvents.map((event) => ({
+					...event,
+					selectedDestinationId: null,
+					selectedDestinationUrl: null,
+				}));
+			}
 
 			const todayKey = toLocalDateKey(new Date());
 			const byDate = new Map<
@@ -513,8 +660,7 @@ export const qrCodesRouter = {
 				if (dateKey === todayKey) scansToday += 1;
 
 				const destinationId = event.selectedDestinationId?.trim() || null;
-				const destinationUrl =
-					event.selectedDestinationUrl?.trim() || null;
+				const destinationUrl = event.selectedDestinationUrl?.trim() || null;
 				const destinationUrlKey = toDestinationUrlKey(destinationUrl);
 				const destinationKey = destinationId
 					? `id:${destinationId}`
@@ -545,7 +691,7 @@ export const qrCodesRouter = {
 				scans: number;
 				uniqueQrCodes: number;
 			}> = [];
-			for (let offset = 0; offset < input.rangeDays; offset += 1) {
+			for (let offset = 0; offset < effectiveRangeDays; offset += 1) {
 				const current = new Date(startDate);
 				current.setDate(startDate.getDate() + offset);
 				const dateKey = toLocalDateKey(current);
@@ -559,14 +705,16 @@ export const qrCodesRouter = {
 
 			const topCodes = [...normalizedCodes]
 				.map((code) => {
-					const destinationHits = code.destinations.map((destination, index) => ({
-						id: destination.id,
-						label: destination.label?.trim() || `Destination ${index + 1}`,
-						url: destination.url,
-						weight: destination.weight,
-						viewsInRange: 0,
-						isConfigured: true,
-					}));
+					const destinationHits = code.destinations.map(
+						(destination, index) => ({
+							id: destination.id,
+							label: destination.label?.trim() || `Destination ${index + 1}`,
+							url: destination.url,
+							weight: destination.weight,
+							viewsInRange: 0,
+							isConfigured: true,
+						}),
+					);
 					const destinationIndexById = new Map(
 						destinationHits.map((destination, index) => [
 							destination.id,
@@ -579,9 +727,7 @@ export const qrCodesRouter = {
 								toDestinationUrlKey(destination.url),
 								index,
 							])
-							.filter(
-								(entry): entry is [string, number] => entry[0] !== null,
-							),
+							.filter((entry): entry is [string, number] => entry[0] !== null),
 					);
 
 					let unattributedViewsInRange = 0;
@@ -666,6 +812,10 @@ export const qrCodesRouter = {
 				period: {
 					startDate: toIsoDate(startDate),
 					endDate: toIsoDate(endDate),
+				},
+				range: {
+					requestedDays: input.rangeDays,
+					appliedDays: effectiveRangeDays,
 				},
 				totals: {
 					qrCodes: normalizedCodes.length,

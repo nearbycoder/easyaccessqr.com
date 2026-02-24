@@ -8,7 +8,8 @@ import {
 	ExternalLink,
 	QrCode,
 } from "lucide-react";
-import { useMemo } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { useMemo, useState } from "react";
 import { useTRPC } from "@/integrations/trpc/react";
 import { authClient } from "@/lib/auth-client";
 import { buildQrShortPath } from "@/lib/qr-links";
@@ -19,6 +20,8 @@ export const Route = createFileRoute("/app/")({
 
 const ANALYTICS_RANGE_DAYS = 30;
 const RECENT_CODES_LIMIT = 6;
+const MINI_CHART_BOTTOM = 30;
+const MINI_CHART_HEIGHT = 26;
 
 type DashboardTarget =
 	| "/app/qr-codes/new"
@@ -50,13 +53,52 @@ function DashboardHome() {
 	const membersQuery = useQuery(trpc.org.listMembers.queryOptions());
 
 	const qrCodes = qrCodesQuery.data ?? [];
-	const analytics = analyticsQuery.data;
+	const analytics = analyticsQuery.data ?? {
+		period: { startDate: "", endDate: "" },
+		range: {
+			requestedDays: ANALYTICS_RANGE_DAYS,
+			appliedDays: ANALYTICS_RANGE_DAYS,
+		},
+		totals: {
+			qrCodes: 0,
+			activeQrCodes: 0,
+			totalScans: 0,
+			scansToday: 0,
+		},
+		dailyScans: [] as Array<{
+			date: string;
+			scans: number;
+			uniqueQrCodes: number;
+		}>,
+		topCodes: [] as Array<{
+			id: number;
+			name: string;
+			slug: string;
+			destinationUrl: string;
+			destinationCount: number;
+			isActive: boolean;
+			scanCount: number;
+			lastScannedAt: Date | null;
+			scansInRange: number;
+			unattributedViewsInRange: number;
+			destinationHits: Array<{
+				id: string;
+				label: string;
+				url: string;
+				weight: number;
+				viewsInRange: number;
+				isConfigured: boolean;
+			}>;
+		}>,
+	};
+	const appliedAnalyticsRangeDays =
+		analytics.range?.appliedDays ?? ANALYTICS_RANGE_DAYS;
 	const teamMembers = membersQuery.data?.length ?? 1;
 
 	const totalCodes = qrCodes.length;
 	const activeCodes = qrCodes.filter((code) => code.isActive).length;
-	const totalViews = analytics?.totals.totalScans ?? 0;
-	const viewsToday = analytics?.totals.scansToday ?? 0;
+	const totalViews = analytics.totals.totalScans;
+	const viewsToday = analytics.totals.scansToday;
 	const activeOrganizationSlug = useMemo(() => {
 		const activeOrganizationId = session?.session.activeOrganizationId ?? "";
 		if (!activeOrganizationId) return "";
@@ -123,13 +165,14 @@ function DashboardHome() {
 		analyticsQuery.isLoading ||
 		membersQuery.isLoading;
 
-	if (isLoading || !analytics) {
+	if (isLoading) {
 		return <DashboardSkeleton />;
 	}
 
 	if (!onboardingComplete) {
 		return (
 			<div className="mx-auto w-full max-w-[1320px]">
+				{analyticsQuery.isError ? <AnalyticsNotice /> : null}
 				<section className="rounded-2xl border border-ds-border bg-ds-surface p-5 sm:p-6">
 					<h1 className="text-3xl font-bold tracking-tight">
 						Welcome to Easy Access QR
@@ -197,6 +240,7 @@ function DashboardHome() {
 
 	return (
 		<div className="mx-auto w-full max-w-[1320px]">
+			{analyticsQuery.isError ? <AnalyticsNotice /> : null}
 			<section className="mb-4 rounded-2xl border border-ds-border bg-ds-surface p-5 sm:p-6">
 				<div className="flex flex-wrap items-start justify-between gap-3">
 					<div>
@@ -229,7 +273,7 @@ function DashboardHome() {
 							Analytics snapshot
 						</h2>
 						<p className="mt-1 text-xs text-ds-text-tertiary">
-							Last {ANALYTICS_RANGE_DAYS} days
+							Last {appliedAnalyticsRangeDays} days
 						</p>
 					</div>
 					<div className="px-4 py-4 sm:px-5">
@@ -319,6 +363,15 @@ function DashboardHome() {
 	);
 }
 
+function AnalyticsNotice() {
+	return (
+		<div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm font-medium text-amber-700 dark:text-amber-300">
+			Analytics are temporarily unavailable. QR management and onboarding are
+			still available.
+		</div>
+	);
+}
+
 function OnboardingStepCard({
 	step,
 	index,
@@ -384,12 +437,13 @@ function MiniTrendChart({
 }: {
 	dailyScans: Array<{ date: string; value: number }>;
 }) {
+	const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 	const points = useMemo(() => {
 		const maxValue = Math.max(...dailyScans.map((row) => row.value), 1);
 		return dailyScans.map((row, index) => {
 			const x =
 				dailyScans.length > 1 ? (index / (dailyScans.length - 1)) * 100 : 50;
-			const y = 100 - (row.value / maxValue) * 100;
+			const y = MINI_CHART_BOTTOM - (row.value / maxValue) * MINI_CHART_HEIGHT;
 			return { ...row, x, y };
 		});
 	}, [dailyScans]);
@@ -398,6 +452,21 @@ function MiniTrendChart({
 		.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
 		.join(" ");
 	const totalViews = dailyScans.reduce((sum, row) => sum + row.value, 0);
+	const hoveredPoint =
+		hoveredIndex !== null && hoveredIndex >= 0 && hoveredIndex < points.length
+			? points[hoveredIndex]
+			: null;
+	const hoveredPercent = hoveredPoint ? hoveredPoint.x : null;
+
+	const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
+		if (points.length === 0) return;
+		const bounds = event.currentTarget.getBoundingClientRect();
+		if (bounds.width <= 0) return;
+		const pointerX = event.clientX - bounds.left;
+		const clampedRatio = Math.min(1, Math.max(0, pointerX / bounds.width));
+		const nextIndex = Math.round(clampedRatio * (points.length - 1));
+		setHoveredIndex(nextIndex);
+	};
 
 	return (
 		<div className="rounded-xl border border-ds-border bg-ds-input-bg p-3">
@@ -409,10 +478,30 @@ function MiniTrendChart({
 				<span>{totalViews} total views</span>
 			</div>
 
-			<div className="mt-3 h-32">
-				<svg viewBox="0 0 100 100" className="h-full w-full">
+			<div className="relative mt-3 h-36 w-full">
+				{hoveredPoint && hoveredPercent !== null ? (
+					<div
+						className="pointer-events-none absolute top-2 z-10 w-36 -translate-x-1/2 rounded-lg border border-ds-border-strong/70 bg-ds-surface px-2.5 py-2 text-xs shadow-lg"
+						style={{ left: `${Math.min(92, Math.max(8, hoveredPercent))}%` }}
+					>
+						<p className="font-semibold text-ds-fg">
+							{formatMiniTrendDate(hoveredPoint.date)}
+						</p>
+						<p className="mt-0.5 text-ds-text-secondary">
+							{hoveredPoint.value.toLocaleString()} views
+						</p>
+					</div>
+				) : null}
+				<svg
+					viewBox="0 0 100 32"
+					preserveAspectRatio="none"
+					className="block h-full w-full"
+					onPointerMove={handlePointerMove}
+					onPointerEnter={handlePointerMove}
+					onPointerLeave={() => setHoveredIndex(null)}
+				>
 					<title>QR views trend</title>
-					{[20, 40, 60, 80].map((y) => (
+					{[6, 11, 16, 21, 26, 30].map((y) => (
 						<line
 							key={y}
 							x1="0"
@@ -421,7 +510,8 @@ function MiniTrendChart({
 							y2={y}
 							stroke="currentColor"
 							className="text-ds-border"
-							strokeWidth="0.8"
+							strokeWidth="0.7"
+							vectorEffect="non-scaling-stroke"
 						/>
 					))}
 					{path ? (
@@ -430,25 +520,69 @@ function MiniTrendChart({
 							fill="none"
 							stroke="currentColor"
 							className="text-ds-accent"
-							strokeWidth="2"
+							strokeWidth="1.6"
 							strokeLinecap="round"
 							strokeLinejoin="round"
+							vectorEffect="non-scaling-stroke"
+						/>
+					) : null}
+					{hoveredPoint ? (
+						<line
+							x1={hoveredPoint.x}
+							y1="4"
+							x2={hoveredPoint.x}
+							y2={MINI_CHART_BOTTOM}
+							stroke="currentColor"
+							className="text-ds-accent/45"
+							strokeWidth="0.8"
+							strokeDasharray="1.4 1.4"
+							vectorEffect="non-scaling-stroke"
 						/>
 					) : null}
 					{points.map((point) => (
-						<circle
+						<line
 							key={point.date}
-							cx={point.x}
-							cy={point.y}
-							r="1.8"
-							fill="currentColor"
+							x1={point.x}
+							y1={point.y}
+							x2={point.x + 0.01}
+							y2={point.y}
+							stroke="currentColor"
 							className="text-ds-accent"
+							strokeWidth="4"
+							strokeLinecap="round"
+							vectorEffect="non-scaling-stroke"
 						/>
 					))}
+					{hoveredPoint ? (
+						<circle
+							cx={hoveredPoint.x}
+							cy={hoveredPoint.y}
+							r="1"
+							fill="currentColor"
+							className="text-ds-accent"
+							vectorEffect="non-scaling-stroke"
+						/>
+					) : null}
 				</svg>
 			</div>
 		</div>
 	);
+}
+
+function formatMiniTrendDate(value: string): string {
+	const [year, month, day] = value.split("-").map((part) => Number(part));
+	if (
+		!Number.isFinite(year) ||
+		!Number.isFinite(month) ||
+		!Number.isFinite(day)
+	) {
+		return value;
+	}
+	const date = new Date(year, month - 1, day);
+	return date.toLocaleDateString(undefined, {
+		month: "short",
+		day: "numeric",
+	});
 }
 
 function DashboardSkeleton() {

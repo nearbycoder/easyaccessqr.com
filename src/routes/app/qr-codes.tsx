@@ -6,6 +6,8 @@ import {
 	useRouterState,
 } from "@tanstack/react-router";
 import {
+	ChevronDown,
+	Eye,
 	ExternalLink,
 	PauseCircle,
 	Pencil,
@@ -13,11 +15,19 @@ import {
 	Plus,
 	Trash2,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { QrPreviewModal } from "@/components/qr/qr-preview-modal";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useTRPC } from "@/integrations/trpc/react";
 import { authClient } from "@/lib/auth-client";
-import { buildQrShortPath } from "@/lib/qr-links";
+import { buildQrPublicPreviewPath, buildQrShortPath } from "@/lib/qr-links";
 
 export const Route = createFileRoute("/app/qr-codes")({
 	component: QrCodesPage,
@@ -31,6 +41,7 @@ function QrCodesPage() {
 		pathname === "/app/qr-codes" || pathname === "/app/qr-codes/";
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
+	const [previewCodeId, setPreviewCodeId] = useState<number | null>(null);
 	const { data: session } = authClient.useSession();
 	const { data: organizationsData } = authClient.useListOrganizations();
 	const activeOrganizationSlug = useMemo(() => {
@@ -71,6 +82,21 @@ function QrCodesPage() {
 	);
 
 	const sortedCodes = useMemo(() => qrCodes ?? [], [qrCodes]);
+	const previewCode = useMemo(
+		() => sortedCodes.find((code) => code.id === previewCodeId) ?? null,
+		[previewCodeId, sortedCodes],
+	);
+	const previewCodePath = useMemo(() => {
+		if (!previewCode) return "";
+		return (
+			buildQrShortPath(activeOrganizationSlug, previewCode.slug) ||
+			previewCode.destinationUrl
+		);
+	}, [activeOrganizationSlug, previewCode]);
+	const previewPublicPath = useMemo(() => {
+		if (!previewCode || !previewCode.isPublic) return "";
+		return buildQrPublicPreviewPath(activeOrganizationSlug, previewCode.slug);
+	}, [activeOrganizationSlug, previewCode]);
 
 	if (!isBaseListRoute) {
 		return <Outlet />;
@@ -144,6 +170,29 @@ function QrCodesPage() {
 													`/${code.slug}`}
 											</span>
 										</div>
+										{code.isPublic ? (
+											<div className="mt-1 text-sm text-ds-text-secondary">
+												<span className="font-semibold">Public QR page:</span>{" "}
+												<a
+													href={buildQrPublicPreviewPath(
+														activeOrganizationSlug,
+														code.slug,
+													)}
+													target="_blank"
+													rel="noreferrer"
+													className="font-semibold text-ds-accent [overflow-wrap:anywhere] hover:underline"
+												>
+													{buildQrPublicPreviewPath(
+														activeOrganizationSlug,
+														code.slug,
+													)}
+												</a>
+											</div>
+										) : (
+											<div className="mt-1 text-sm text-ds-text-tertiary">
+												Public QR page is disabled
+											</div>
+										)}
 										<div className="mt-1 text-base text-ds-text-tertiary">
 											<span className="font-medium text-ds-text-secondary">
 												Primary destination:
@@ -161,53 +210,96 @@ function QrCodesPage() {
 										</div>
 									</div>
 									<div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
-										<Link
-											to="/app/qr-codes/$qrCodeId/edit"
-											params={{ qrCodeId: String(code.id) }}
-											className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-ds-border bg-ds-input-bg px-2.5 text-xs font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent sm:px-3 sm:text-sm"
-										>
-											<Pencil className="h-4 w-4" />
-											Edit
-										</Link>
-										<a
-											href={
-												buildQrShortPath(activeOrganizationSlug, code.slug) ||
-												code.destinationUrl
-											}
-											target="_blank"
-											rel="noreferrer"
-											className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-ds-border bg-ds-input-bg px-2.5 text-xs font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent sm:px-3 sm:text-sm"
-										>
-											<ExternalLink className="h-4 w-4" />
-											Open link
-										</a>
 										<button
 											type="button"
-											onClick={() =>
-												void updateCode.mutateAsync({
-													id: code.id,
-													isActive: !code.isActive,
-												})
-											}
+											onClick={() => setPreviewCodeId(code.id)}
 											className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-ds-border bg-ds-input-bg px-2.5 text-xs font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent sm:px-3 sm:text-sm"
 										>
-											{code.isActive ? (
-												<PauseCircle className="h-4 w-4" />
-											) : (
-												<PlayCircle className="h-4 w-4" />
-											)}
-											{code.isActive ? "Pause" : "Resume"}
+											<Eye className="h-4 w-4" />
+											View QR
 										</button>
-										<button
-											type="button"
-											onClick={() =>
-												void deleteCode.mutateAsync({ id: code.id })
-											}
-											className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-red-300 bg-ds-input-bg px-2.5 text-xs font-semibold text-red-600 transition-colors hover:border-red-500 hover:bg-red-50 sm:px-3 sm:text-sm"
-										>
-											<Trash2 className="h-4 w-4" />
-											Delete
-										</button>
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
+												<button
+													type="button"
+													className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-ds-border bg-ds-input-bg px-2.5 text-xs font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent sm:px-3 sm:text-sm"
+												>
+													Actions
+													<ChevronDown className="h-4 w-4" />
+												</button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent
+												align="end"
+												className="w-48 border border-ds-border bg-ds-surface p-1"
+											>
+												<DropdownMenuItem asChild className="cursor-pointer">
+													<Link
+														to="/app/qr-codes/$qrCodeId/edit"
+														params={{ qrCodeId: String(code.id) }}
+													>
+														<Pencil className="h-4 w-4" />
+														Edit
+													</Link>
+												</DropdownMenuItem>
+												<DropdownMenuItem asChild className="cursor-pointer">
+													<a
+														href={
+															buildQrShortPath(
+																activeOrganizationSlug,
+																code.slug,
+															) || code.destinationUrl
+														}
+														target="_blank"
+														rel="noreferrer"
+													>
+														<ExternalLink className="h-4 w-4" />
+														Open link
+													</a>
+												</DropdownMenuItem>
+												{code.isPublic ? (
+													<DropdownMenuItem asChild className="cursor-pointer">
+														<a
+															href={buildQrPublicPreviewPath(
+																activeOrganizationSlug,
+																code.slug,
+															)}
+															target="_blank"
+															rel="noreferrer"
+														>
+															<ExternalLink className="h-4 w-4" />
+															Public page
+														</a>
+													</DropdownMenuItem>
+												) : null}
+												<DropdownMenuItem
+													onSelect={() => {
+														void updateCode.mutateAsync({
+															id: code.id,
+															isActive: !code.isActive,
+														});
+													}}
+													className="cursor-pointer"
+												>
+													{code.isActive ? (
+														<PauseCircle className="h-4 w-4" />
+													) : (
+														<PlayCircle className="h-4 w-4" />
+													)}
+													{code.isActive ? "Pause" : "Resume"}
+												</DropdownMenuItem>
+												<DropdownMenuSeparator className="my-1 bg-ds-border" />
+												<DropdownMenuItem
+													onSelect={() => {
+														void deleteCode.mutateAsync({ id: code.id });
+													}}
+													variant="destructive"
+													className="cursor-pointer"
+												>
+													<Trash2 className="h-4 w-4" />
+													Delete
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
 									</div>
 								</div>
 							</div>
@@ -215,6 +307,23 @@ function QrCodesPage() {
 					</div>
 				)}
 			</div>
+
+			<QrPreviewModal
+				open={Boolean(previewCode)}
+				onOpenChange={(open) => {
+					if (!open) {
+						setPreviewCodeId(null);
+					}
+				}}
+				name={previewCode?.name ?? "QR code"}
+				data={previewCodePath}
+				shortLinkPath={
+					previewCode
+						? (buildQrShortPath(activeOrganizationSlug, previewCode.slug) ?? "")
+						: ""
+				}
+				publicPagePath={previewPublicPath}
+			/>
 		</div>
 	);
 }

@@ -34,6 +34,7 @@ export const qrCode = pgTable(
 			.notNull()
 			.default(sql`'[]'::jsonb`),
 		isActive: boolean("is_active").default(true).notNull(),
+		isPublic: boolean("is_public").default(false).notNull(),
 		tags: text("tags").array().default([]).notNull(),
 		scanCount: integer("scan_count").default(0).notNull(),
 		lastScannedAt: timestamp("last_scanned_at"),
@@ -48,6 +49,7 @@ export const qrCode = pgTable(
 		index("qr_code_org_idx").on(table.organizationId),
 		index("qr_code_creator_idx").on(table.createdByUserId),
 		index("qr_code_active_idx").on(table.isActive),
+		index("qr_code_public_idx").on(table.isPublic),
 	],
 );
 

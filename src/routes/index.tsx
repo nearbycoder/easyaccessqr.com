@@ -4,15 +4,15 @@ import {
 	BarChart3,
 	CirclePlay,
 	Download,
-	Menu,
 	QrCode,
 	ScanLine,
 	Users,
 } from "lucide-react";
 import type { Options as QrStyleOptions } from "qr-code-styling/lib/types";
 import type { FormEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { MarketingHeader } from "@/components/marketing/marketing-header";
 import {
 	Dialog,
 	DialogContent,
@@ -20,7 +20,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { NativeSelect } from "@/components/ui/native-select";
 import { authClient } from "@/lib/auth-client";
 import {
 	buildHomeStructuredData,
@@ -95,7 +95,7 @@ const billingPlans = [
 		period: "/month",
 		description: "For teams running active marketing campaigns.",
 		features: [
-			"Up to 500 active QR codes",
+			"Up to 100 active QR codes",
 			"Advanced analytics and exports",
 			"Member access controls",
 		],
@@ -131,12 +131,11 @@ function LandingPage() {
 	const { data: session } = authClient.useSession();
 	const [isHydrated, setIsHydrated] = useState(false);
 	const [builderOpen, setBuilderOpen] = useState(false);
+	const isLoggedIn = isHydrated && Boolean(session?.user);
 
 	useEffect(() => {
 		setIsHydrated(true);
 	}, []);
-
-	const isLoggedIn = isHydrated && Boolean(session?.user);
 
 	return (
 		<div className="min-h-screen bg-ds-bg text-ds-fg selection:bg-ds-selection-bg selection:text-ds-selection-fg">
@@ -144,61 +143,12 @@ function LandingPage() {
 				{JSON.stringify(homeStructuredData)}
 			</script>
 
-			<header className="sticky top-0 z-40 border-b border-ds-border bg-ds-surface/95 backdrop-blur-sm">
-				<div className="mx-auto flex w-full max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
-					<button
-						type="button"
-						className="inline-flex h-9 w-9 items-center justify-center text-ds-text-tertiary lg:hidden"
-					>
-						<Menu className="h-4 w-4" />
-					</button>
-					<div className="text-[30px] font-extrabold leading-none tracking-tight text-[#de6346]">
-						Easy Access QR
-					</div>
-					<nav className="ml-4 hidden items-center gap-6 text-[15px] font-medium text-ds-text-secondary lg:flex">
-						<a href={`#${FEATURES_SECTION_ID}`} className="hover:text-ds-fg">
-							Features
-						</a>
-						<a href={`#${PRODUCT_SECTION_ID}`} className="hover:text-ds-fg">
-							Product
-						</a>
-						<a href={`#${PRICING_SECTION_ID}`} className="hover:text-ds-fg">
-							Billing
-						</a>
-						<Link to="/terms" className="hover:text-ds-fg">
-							Terms
-						</Link>
-						<Link to="/privacy" className="hover:text-ds-fg">
-							Privacy
-						</Link>
-					</nav>
-					<div className="ml-auto flex items-center gap-2">
-						<div className="hidden lg:block">
-							<ThemeToggle />
-						</div>
-						{!isLoggedIn ? (
-							<Link
-								to="/auth/sign-in"
-								search={{ invitationId: undefined, email: undefined }}
-								className="px-4 py-2 text-sm font-semibold text-ds-accent"
-							>
-								Sign in
-							</Link>
-						) : null}
-						<Link
-							to={isLoggedIn ? "/app" : "/auth/sign-up"}
-							search={
-								isLoggedIn
-									? undefined
-									: { invitationId: undefined, email: undefined }
-							}
-							className="inline-flex items-center gap-2 border border-ds-accent bg-ds-accent px-4 py-2 text-sm font-semibold text-ds-accent-fg transition-colors hover:bg-ds-accent-hover"
-						>
-							{isLoggedIn ? "Open dashboard" : "Create free account"}
-						</Link>
-					</div>
-				</div>
-			</header>
+			<MarketingHeader
+				isHome
+				featuresSectionId={FEATURES_SECTION_ID}
+				productSectionId={PRODUCT_SECTION_ID}
+				pricingSectionId={PRICING_SECTION_ID}
+			/>
 
 			<section className="px-4 pt-16 pb-14 sm:px-6 sm:pt-20 sm:pb-18">
 				<div className="mx-auto w-full max-w-5xl text-center">
@@ -230,7 +180,7 @@ function LandingPage() {
 							className="inline-flex items-center gap-2 border border-ds-accent bg-transparent px-7 py-3 text-base font-bold text-ds-accent transition-colors hover:bg-ds-surface2"
 						>
 							<CirclePlay className="h-4 w-4" />
-							Check out QR builder
+							Check out our QR builder
 						</button>
 					</div>
 				</div>
@@ -241,7 +191,7 @@ function LandingPage() {
 					<div className="relative border border-ds-border bg-ds-surface p-4 sm:p-6">
 						<div className="mb-4 flex items-center justify-between border-b border-ds-border pb-3">
 							<div className="text-xl font-extrabold text-[#de6346]">
-								Easy Acess QR
+								Easy Access QR
 							</div>
 							<div className="text-sm text-ds-text-tertiary">
 								Acme Organization
@@ -282,15 +232,17 @@ function LandingPage() {
 					</div>
 					<div className="space-y-3">
 						<div className="border border-ds-border bg-ds-surface2 p-4">
-							<p className="text-sm font-bold">Recent recommendation</p>
+							<p className="text-sm font-bold">QR design studio</p>
 							<p className="mt-2 text-sm text-ds-text-secondary">
-								Enable destination A/B routing on your top-performing code.
+								Customize dot style, colors, quiet zone, and logos, then
+								download production-ready PNG, SVG, or JPEG files.
 							</p>
 						</div>
 						<div className="border border-ds-border bg-ds-surface2 p-4">
-							<p className="text-sm font-bold">Upcoming</p>
+							<p className="text-sm font-bold">Dynamic routing analytics</p>
 							<p className="mt-2 text-sm text-ds-text-secondary">
-								Monthly analytics report compiles in 2 days.
+								Split traffic across multiple destinations with weighted rules
+								and track destination-level views from one short link.
 							</p>
 						</div>
 					</div>
@@ -421,6 +373,12 @@ function LandingPage() {
 				<div className="mx-auto flex w-full max-w-6xl flex-col gap-3 text-sm text-ds-text-tertiary sm:flex-row sm:items-center sm:justify-between">
 					<div>Easy Access QR</div>
 					<div className="flex items-center gap-4">
+						<a
+							href="mailto:contact@easyaccessqr.com"
+							className="hover:text-ds-fg"
+						>
+							contact@easyaccessqr.com
+						</a>
 						<Link to="/terms" className="hover:text-ds-fg">
 							Terms of service
 						</Link>
@@ -467,6 +425,11 @@ function HomepageQrBuilderModal({
 		"https://easyaccessqr.com",
 	);
 	const [dotStyle, setDotStyle] = useState<"rounded" | "square">("rounded");
+	const [quietZone, setQuietZone] = useState(8);
+	const [previewSize, setPreviewSize] = useState(320);
+	const [logoUrl, setLogoUrl] = useState("");
+	const [logoSize, setLogoSize] = useState(22);
+	const [hideBackgroundDots, setHideBackgroundDots] = useState(true);
 	const [dotColor, setDotColor] = useState("#1f2522");
 	const [backgroundColor, setBackgroundColor] = useState("#ffffff");
 	const [previewData, setPreviewData] = useState("https://easyaccessqr.com");
@@ -477,7 +440,12 @@ function HomepageQrBuilderModal({
 	const [qrConstructor, setQrConstructor] =
 		useState<QRCodeStylingConstructor | null>(null);
 	const qrRef = useRef<QRCodeStylingInstance | null>(null);
-	const containerRef = useRef<HTMLDivElement | null>(null);
+	const [previewContainer, setPreviewContainer] =
+		useState<HTMLDivElement | null>(null);
+
+	const assignPreviewContainer = useCallback((node: HTMLDivElement | null) => {
+		setPreviewContainer(node);
+	}, []);
 
 	useEffect(() => {
 		let mounted = true;
@@ -494,23 +462,32 @@ function HomepageQrBuilderModal({
 			mounted = false;
 			qrRef.current = null;
 			setIsPreviewReady(false);
-			if (containerRef.current) {
-				containerRef.current.innerHTML = "";
-			}
 		};
 	}, []);
 
 	useEffect(() => {
-		if (!open || !qrConstructor || !containerRef.current) return;
+		if (!open || !qrConstructor || !previewContainer) return;
 		setIsPreviewReady(false);
+		const normalizedLogoUrl = logoUrl.trim();
+		const validLogoUrl = isHttpUrl(normalizedLogoUrl)
+			? normalizedLogoUrl
+			: undefined;
 		const instance = new qrConstructor({
 			type: "svg",
-			width: 320,
-			height: 320,
-			margin: 8,
+			shape: "square",
+			width: previewSize,
+			height: previewSize,
+			margin: quietZone,
 			data: previewData,
+			image: validLogoUrl,
 			qrOptions: {
 				errorCorrectionLevel: "Q",
+			},
+			imageOptions: {
+				hideBackgroundDots,
+				imageSize: logoSize / 100,
+				margin: 4,
+				crossOrigin: "anonymous",
 			},
 			dotsOptions: {
 				type: dotStyle,
@@ -529,10 +506,31 @@ function HomepageQrBuilderModal({
 			},
 		});
 		qrRef.current = instance;
-		containerRef.current.innerHTML = "";
-		instance.append(containerRef.current);
+		previewContainer.innerHTML = "";
+		instance.append(previewContainer);
 		setIsPreviewReady(true);
-	}, [backgroundColor, dotColor, dotStyle, open, previewData, qrConstructor]);
+
+		return () => {
+			if (qrRef.current === instance) {
+				qrRef.current = null;
+			}
+			previewContainer.innerHTML = "";
+			setIsPreviewReady(false);
+		};
+	}, [
+		backgroundColor,
+		dotColor,
+		dotStyle,
+		hideBackgroundDots,
+		logoSize,
+		logoUrl,
+		open,
+		previewSize,
+		previewContainer,
+		previewData,
+		qrConstructor,
+		quietZone,
+	]);
 
 	const handleBuildPreview = (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -540,6 +538,10 @@ function HomepageQrBuilderModal({
 			setPreviewError(
 				"Enter a valid HTTP(S) destination URL to generate preview.",
 			);
+			return;
+		}
+		if (logoUrl.trim() && !isHttpUrl(logoUrl)) {
+			setPreviewError("Image URL must be empty or a valid HTTP(S) URL.");
 			return;
 		}
 
@@ -573,7 +575,8 @@ function HomepageQrBuilderModal({
 					</DialogTitle>
 					<DialogDescription className="text-sm text-ds-text-secondary">
 						Build and preview a QR code instantly. This demo does not save
-						projects.
+						projects, does not include tracking analytics, and generates a QR
+						code that points directly to the destination URL.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -591,26 +594,29 @@ function HomepageQrBuilderModal({
 									value={name}
 									onChange={(event) => setName(event.target.value)}
 									placeholder="Campaign name"
+									autoComplete="off"
+									data-1p-ignore="true"
+									data-lpignore="true"
 									className="h-11 w-full rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm text-ds-fg outline-none transition-colors placeholder:text-ds-text-tertiary focus:border-ds-accent"
 								/>
 							</label>
-							<label className="block">
+							<div className="block">
 								<span className="mb-1 block text-xs font-semibold text-ds-text-tertiary">
 									Dot style
 								</span>
-								<select
+								<NativeSelect
 									value={dotStyle}
 									onChange={(event) =>
 										setDotStyle(
 											event.target.value === "square" ? "square" : "rounded",
 										)
 									}
-									className="h-11 w-full rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm text-ds-fg outline-none transition-colors focus:border-ds-accent"
+									className="h-11 rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm text-ds-fg outline-none transition-colors focus:border-ds-accent"
 								>
 									<option value="rounded">Rounded</option>
 									<option value="square">Square</option>
-								</select>
-							</label>
+								</NativeSelect>
+							</div>
 						</div>
 
 						<label className="block">
@@ -672,6 +678,92 @@ function HomepageQrBuilderModal({
 							</label>
 						</div>
 
+						<div className="grid gap-3 sm:grid-cols-2">
+							<label className="block">
+								<span className="mb-1 block text-xs font-semibold text-ds-text-tertiary">
+									Quiet zone
+								</span>
+								<input
+									type="range"
+									min={0}
+									max={24}
+									step={1}
+									value={quietZone}
+									onChange={(event) => setQuietZone(Number(event.target.value))}
+									className="mt-2 w-full accent-ds-accent"
+								/>
+								<div className="mt-1 text-xs font-semibold text-ds-fg">
+									{quietZone}px
+								</div>
+							</label>
+							<label className="block">
+								<span className="mb-1 block text-xs font-semibold text-ds-text-tertiary">
+									Preview size
+								</span>
+								<input
+									type="range"
+									min={220}
+									max={440}
+									step={10}
+									value={previewSize}
+									onChange={(event) =>
+										setPreviewSize(Number(event.target.value))
+									}
+									className="mt-2 w-full accent-ds-accent"
+								/>
+								<div className="mt-1 text-xs font-semibold text-ds-fg">
+									{previewSize}px
+								</div>
+							</label>
+						</div>
+
+						<div className="rounded-xl border border-ds-border bg-ds-surface2/45 p-3">
+							<label className="block">
+								<span className="mb-1 block text-xs font-semibold text-ds-text-tertiary">
+									Center image URL (optional)
+								</span>
+								<input
+									value={logoUrl}
+									onChange={(event) => setLogoUrl(event.target.value)}
+									placeholder="https://example.com/logo.png"
+									autoComplete="off"
+									className="h-11 w-full rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm text-ds-fg outline-none transition-colors placeholder:text-ds-text-tertiary focus:border-ds-accent"
+								/>
+							</label>
+							<div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+								<label className="block">
+									<span className="mb-1 block text-xs font-semibold text-ds-text-tertiary">
+										Image size
+									</span>
+									<input
+										type="range"
+										min={10}
+										max={35}
+										step={1}
+										value={logoSize}
+										onChange={(event) =>
+											setLogoSize(Number(event.target.value))
+										}
+										className="mt-2 w-full accent-ds-accent"
+									/>
+									<div className="mt-1 text-xs font-semibold text-ds-fg">
+										{logoSize}%
+									</div>
+								</label>
+								<label className="inline-flex items-center gap-2 rounded-xl border border-ds-border bg-ds-input-bg px-3 py-2 text-sm text-ds-fg">
+									<input
+										type="checkbox"
+										checked={hideBackgroundDots}
+										onChange={(event) =>
+											setHideBackgroundDots(event.target.checked)
+										}
+										className="h-4 w-4 accent-ds-accent"
+									/>
+									Mask behind image
+								</label>
+							</div>
+						</div>
+
 						{previewError ? (
 							<p className="text-xs font-medium text-red-600">{previewError}</p>
 						) : (
@@ -694,6 +786,11 @@ function HomepageQrBuilderModal({
 									setName("Spring launch");
 									setDestinationUrl("https://easyaccessqr.com");
 									setDotStyle("rounded");
+									setQuietZone(8);
+									setPreviewSize(320);
+									setLogoUrl("");
+									setLogoSize(22);
+									setHideBackgroundDots(true);
 									setDotColor("#1f2522");
 									setBackgroundColor("#ffffff");
 									setPreviewData("https://easyaccessqr.com");
@@ -712,12 +809,12 @@ function HomepageQrBuilderModal({
 						</div>
 						<div className="rounded-xl border border-ds-border bg-white p-3">
 							<div
-								ref={containerRef}
+								ref={assignPreviewContainer}
 								className="flex min-h-[320px] items-center justify-center overflow-hidden rounded-lg [&>canvas]:h-auto [&>canvas]:max-w-full [&>svg]:h-auto [&>svg]:max-w-full"
 							/>
 						</div>
 						<p className="mt-2 text-xs text-ds-text-tertiary">
-							Encoded URL:{" "}
+							Direct destination URL (no tracking):{" "}
 							<span className="font-semibold text-ds-fg">{previewData}</span>
 						</p>
 						<div className="mt-3 flex flex-wrap gap-2">
@@ -741,7 +838,8 @@ function HomepageQrBuilderModal({
 
 				<div className="flex flex-wrap items-center justify-between gap-2 border-t border-ds-border pt-3">
 					<p className="text-xs text-ds-text-tertiary">
-						Preview mode only. Save and publish are available in the dashboard.
+						Preview mode only. This demo does not save projects or track views.
+						Saved dashboard codes use tracked short links.
 					</p>
 					<Link
 						to={isLoggedIn ? "/app/qr-codes/new" : "/auth/sign-up"}

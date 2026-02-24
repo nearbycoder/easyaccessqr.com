@@ -252,20 +252,37 @@ const themeBootScript = `(() => {
 
 function NotFound() {
 	return (
-		<div className="min-h-screen bg-ds-bg text-ds-fg font-sans flex items-center justify-center p-4 sm:p-6 selection:bg-ds-selection-bg selection:text-ds-selection-fg">
-			<div className="text-center">
-				<h1 className="mb-4 text-6xl font-extrabold tracking-tighter sm:text-8xl">
-					404
-				</h1>
-				<p className="text-ds-muted text-sm font-bold tracking-wide mb-8">
-					Page Not Found
+		<div className="min-h-screen bg-[#11181d] text-[#ebf0f0] font-sans flex items-center justify-center p-4 sm:p-6 selection:bg-[#2f8c89]/30 selection:text-[#ecf3f3]">
+			<div className="w-full max-w-2xl rounded-3xl border border-[#334346] bg-gradient-to-br from-[#1b242a] via-[#1a2329] to-[#182127] px-7 py-8 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:px-10 sm:py-10">
+				<p className="text-[#de6346] text-4xl font-extrabold tracking-tight">
+					Easy Access QR
 				</p>
-				<Link
-					to="/"
-					className="inline-flex bg-ds-accent text-ds-accent-fg px-8 py-3 font-extrabold text-sm tracking-wide hover:bg-ds-accent-hover transition-colors"
-				>
-					Go Home &rarr;
-				</Link>
+				<p className="mt-5 inline-flex rounded-full border border-[#446e70] bg-[#2f8c89]/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#91d6d2]">
+					404 · Page not found
+				</p>
+				<h1 className="mt-4 text-4xl font-extrabold tracking-tight text-[#f2f7f7] sm:text-5xl">
+					This page does not exist
+				</h1>
+				<p className="mt-3 max-w-xl text-lg leading-relaxed text-[#b5c2c2]">
+					The link may be outdated, paused, or no longer available.
+				</p>
+				<div className="mt-8 flex flex-wrap gap-3">
+					<Link
+						to="/"
+						className="inline-flex h-11 items-center justify-center rounded-xl bg-[#2f8c89] px-5 text-sm font-bold tracking-wide text-[#f6fbfb] transition-colors hover:bg-[#3a9c99]"
+					>
+						Go home
+					</Link>
+					<button
+						type="button"
+						onClick={() => {
+							window.history.back();
+						}}
+						className="inline-flex h-11 items-center justify-center rounded-xl border border-[#445356] bg-[#2d3a3f]/35 px-5 text-sm font-bold tracking-wide text-[#d8e2e2] transition-colors hover:bg-[#324247]/50"
+					>
+						Go back
+					</button>
+				</div>
 			</div>
 		</div>
 	);

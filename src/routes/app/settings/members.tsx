@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { inferRouterOutputs } from "@trpc/server";
 import {
-	ChevronDown,
 	Filter,
 	Mail,
 	Save,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { NativeSelect } from "@/components/ui/native-select";
 import { UserNameLink } from "@/components/user-name-link";
 import { useTRPC } from "@/integrations/trpc/react";
 import type { TRPCRouter } from "@/integrations/trpc/router";
@@ -211,7 +211,7 @@ function MembersPage() {
 	};
 
 	return (
-		<div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:p-6">
+		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-8">
 				<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
 					Members
@@ -288,10 +288,11 @@ function MembersPage() {
 						</div>
 						<div className="relative">
 							<Filter className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ds-muted2" />
-							<select
+							<NativeSelect
 								value={roleFilter}
 								onChange={(event) => setRoleFilter(event.target.value)}
-								className="w-full appearance-none border-[2px] border-ds-muted3 bg-ds-input-bg py-2 pl-9 pr-10 text-xs font-bold tracking-wide text-ds-text-secondary focus:border-ds-accent focus:outline-none"
+								className="border-[2px] border-ds-muted3 bg-ds-input-bg py-2 pl-9 text-xs font-bold tracking-wide text-ds-text-secondary focus:border-ds-accent focus:outline-none"
+								iconClassName="h-3.5 w-3.5"
 							>
 								<option value="all">All Roles</option>
 								{roleOptions.map((role) => (
@@ -299,10 +300,7 @@ function MembersPage() {
 										{role}
 									</option>
 								))}
-							</select>
-							<span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-ds-text-tertiary">
-								<ChevronDown className="h-3.5 w-3.5" />
-							</span>
+							</NativeSelect>
 						</div>
 					</div>
 				</div>
@@ -355,28 +353,25 @@ function MembersPage() {
 											</div>
 											{canManageMembers ? (
 												<>
-													<div className="relative">
-														<select
-															value={selectedRole}
-															onChange={(event) =>
-																updateDraftRole(
-																	member.memberId,
-																	event.target.value,
-																)
-															}
-															disabled={isBusy || isSelf}
-															className="appearance-none border-[2px] border-ds-muted3 bg-ds-input-bg py-1 pl-2 pr-7 text-[10px] font-bold tracking-wide text-ds-text-secondary focus:border-ds-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
-														>
-															{roleOptions.map((role) => (
-																<option key={role} value={role}>
-																	{role}
-																</option>
-															))}
-														</select>
-														<span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-ds-text-tertiary">
-															<ChevronDown className="h-3 w-3" />
-														</span>
-													</div>
+													<NativeSelect
+														value={selectedRole}
+														onChange={(event) =>
+															updateDraftRole(
+																member.memberId,
+																event.target.value,
+															)
+														}
+														disabled={isBusy || isSelf}
+														className="border-[2px] border-ds-muted3 bg-ds-input-bg py-1 pl-2 text-[10px] font-bold tracking-wide text-ds-text-secondary focus:border-ds-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+														iconClassName="h-3 w-3"
+														iconWrapperClassName="right-2"
+													>
+														{roleOptions.map((role) => (
+															<option key={role} value={role}>
+																{role}
+															</option>
+														))}
+													</NativeSelect>
 													<button
 														type="button"
 														onClick={() => void handleSaveRole(member)}

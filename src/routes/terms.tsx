@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, FileText } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { FileText } from "lucide-react";
+import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { buildPageSeo } from "@/lib/seo";
 
 const termsSeo = buildPageSeo({
@@ -79,23 +79,7 @@ const sections = [
 function TermsPage() {
 	return (
 		<div className="min-h-screen bg-ds-bg text-ds-fg selection:bg-ds-selection-bg selection:text-ds-selection-fg font-sans">
-			<header className="border-b border-ds-border bg-ds-surface">
-				<div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-6 sm:py-8">
-					<div className="text-2xl font-extrabold tracking-tight text-[#de6346] sm:text-4xl">
-						Easy Access QR
-					</div>
-					<div className="ml-auto flex items-center gap-3">
-						<ThemeToggle />
-						<Link
-							to="/"
-							className="inline-flex items-center gap-2 rounded-xl border border-ds-border bg-ds-input-bg px-3 py-2 text-xs font-semibold transition-colors hover:border-ds-accent hover:text-ds-accent sm:px-4"
-						>
-							<ArrowLeft className="h-4 w-4" />
-							Back Home
-						</Link>
-					</div>
-				</div>
-			</header>
+			<MarketingHeader />
 
 			<main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
 				<article className="rounded-2xl border border-ds-border bg-ds-surface p-6 sm:p-10">
@@ -152,6 +136,12 @@ function TermsPage() {
 				<div className="mx-auto flex w-full max-w-6xl flex-col gap-3 text-sm text-ds-text-tertiary sm:flex-row sm:items-center sm:justify-between">
 					<div>Easy Access QR</div>
 					<div className="flex items-center gap-4">
+						<a
+							href="mailto:contact@easyaccessqr.com"
+							className="hover:text-ds-fg"
+						>
+							contact@easyaccessqr.com
+						</a>
 						<Link to="/terms" className="hover:text-ds-fg">
 							Terms of service
 						</Link>

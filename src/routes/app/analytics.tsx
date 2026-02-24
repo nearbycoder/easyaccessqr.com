@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Activity, ChevronDown, QrCode, ScanLine } from "lucide-react";
-import type { ReactNode } from "react";
-import { useId, useState } from "react";
+import { Activity, QrCode, ScanLine } from "lucide-react";
+import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
+import { useEffect, useId, useState } from "react";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useTRPC } from "@/integrations/trpc/react";
 
 export const Route = createFileRoute("/app/analytics")({
@@ -22,6 +23,21 @@ function AnalyticsPage() {
 	const qrCodeFieldId = useId();
 	const [rangeDays, setRangeDays] = useState<7 | 14 | 30 | 60 | 90>(30);
 	const [selectedCodeId, setSelectedCodeId] = useState("all");
+	const { data: subscription } = useQuery(
+		trpc.org.getSubscription.queryOptions(),
+	);
+	const maxHistoryDays = subscription?.limits.historyDays ?? 7;
+	const hasUnlimitedHistory = maxHistoryDays < 0;
+
+	useEffect(() => {
+		if (hasUnlimitedHistory) return;
+		if (rangeDays <= maxHistoryDays) return;
+		const fallback =
+			[...RANGE_OPTIONS]
+				.reverse()
+				.find((option) => option.value <= maxHistoryDays)?.value ?? 7;
+		setRangeDays(fallback);
+	}, [hasUnlimitedHistory, maxHistoryDays, rangeDays]);
 
 	const { data: qrCodes } = useQuery(
 		trpc.qrCodes.list.queryOptions({ includeInactive: true }),
@@ -39,7 +55,7 @@ function AnalyticsPage() {
 	const analytics = analyticsQuery.data;
 
 	return (
-		<div className="mx-auto w-full max-w-[1260px]">
+		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-6 sm:mb-8">
 				<div>
 					<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
@@ -60,24 +76,19 @@ function AnalyticsPage() {
 						>
 							QR code
 						</label>
-						<div className="relative">
-							<select
-								id={qrCodeFieldId}
-								value={selectedCodeId}
-								onChange={(event) => setSelectedCodeId(event.target.value)}
-								className="h-11 w-full appearance-none rounded-xl border border-ds-border bg-white px-3 pr-10 text-sm text-ds-fg outline-none transition-colors focus:border-ds-accent"
-							>
-								<option value="all">All Codes</option>
-								{(qrCodes ?? []).map((code) => (
-									<option key={code.id} value={String(code.id)}>
-										{code.name}
-									</option>
-								))}
-							</select>
-							<span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-ds-text-tertiary">
-								<ChevronDown className="h-4 w-4" />
-							</span>
-						</div>
+						<NativeSelect
+							id={qrCodeFieldId}
+							value={selectedCodeId}
+							onChange={(event) => setSelectedCodeId(event.target.value)}
+							className="h-11 rounded-xl border border-ds-border bg-white px-3 text-sm text-ds-fg outline-none transition-colors focus:border-ds-accent"
+						>
+							<option value="all">All Codes</option>
+							{(qrCodes ?? []).map((code) => (
+								<option key={code.id} value={String(code.id)}>
+									{code.name}
+								</option>
+							))}
+						</NativeSelect>
 					</div>
 					<div>
 						<div className="mb-2 block text-xs font-semibold text-ds-text-tertiary">
@@ -86,15 +97,22 @@ function AnalyticsPage() {
 						<div className="flex flex-wrap gap-2">
 							{RANGE_OPTIONS.map((option) => {
 								const isActive = rangeDays === option.value;
+								const isUnavailable =
+									!hasUnlimitedHistory && option.value > maxHistoryDays;
 								return (
 									<button
 										key={option.value}
 										type="button"
-										onClick={() => setRangeDays(option.value)}
+										onClick={() => {
+											if (!isUnavailable) setRangeDays(option.value);
+										}}
+										disabled={isUnavailable}
 										className={`rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors ${
 											isActive
 												? "border-ds-accent bg-ds-accent/10 text-ds-accent"
-												: "border-ds-border bg-white text-ds-text-tertiary hover:border-ds-accent hover:text-ds-accent"
+												: isUnavailable
+													? "cursor-not-allowed border-ds-border bg-white/50 text-ds-text-tertiary/50"
+													: "border-ds-border bg-white text-ds-text-tertiary hover:border-ds-accent hover:text-ds-accent"
 										}`}
 									>
 										{option.label}
@@ -102,6 +120,12 @@ function AnalyticsPage() {
 								);
 							})}
 						</div>
+						{!hasUnlimitedHistory ? (
+							<p className="mt-2 text-xs text-ds-text-tertiary">
+								Current plan includes up to {maxHistoryDays} days of analytics
+								history.
+							</p>
+						) : null}
 					</div>
 				</div>
 			</div>
@@ -171,7 +195,9 @@ function AnalyticsPage() {
 												<DestinationHitBreakdown
 													destinationHits={code.destinationHits}
 													scansInRange={code.scansInRange}
-													unattributedViewsInRange={code.unattributedViewsInRange}
+													unattributedViewsInRange={
+														code.unattributedViewsInRange
+													}
 												/>
 											) : null}
 										</div>
@@ -213,6 +239,7 @@ function DailyScanTrend({
 }: {
 	dailyScans: Array<{ date: string; scans: number; uniqueQrCodes: number }>;
 }) {
+	const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 	const totalScans = dailyScans.reduce((sum, row) => sum + row.scans, 0);
 	const averageScans = dailyScans.length ? totalScans / dailyScans.length : 0;
 	const activeDays = dailyScans.filter((row) => row.scans > 0).length;
@@ -260,6 +287,23 @@ function DailyScanTrend({
 		(point, index) =>
 			point.scans > 0 || index === 0 || index === points.length - 1,
 	);
+	const hoveredPoint =
+		hoveredIndex !== null && hoveredIndex >= 0 && hoveredIndex < points.length
+			? points[hoveredIndex]
+			: null;
+	const hoveredPercent = hoveredPoint
+		? ((hoveredPoint.x - chartLeft) / (chartRight - chartLeft)) * 100
+		: null;
+
+	const handleChartPointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
+		if (points.length === 0) return;
+		const bounds = event.currentTarget.getBoundingClientRect();
+		if (bounds.width <= 0) return;
+		const pointerX = event.clientX - bounds.left;
+		const clampedRatio = Math.min(1, Math.max(0, pointerX / bounds.width));
+		const nextIndex = Math.round(clampedRatio * (points.length - 1));
+		setHoveredIndex(nextIndex);
+	};
 
 	return (
 		<div className="overflow-hidden rounded-2xl border border-ds-border bg-ds-surface">
@@ -280,10 +324,45 @@ function DailyScanTrend({
 				</div>
 
 				<div className="rounded-xl border border-ds-border bg-white p-3">
-					<div className="w-full aspect-[3/1] min-h-[210px]">
+					<div className="relative w-full aspect-[3/1] min-h-[210px]">
+						{hoveredPoint && hoveredPercent !== null ? (
+							<div
+								className="pointer-events-none absolute top-3 z-10 w-44 -translate-x-1/2 rounded-lg border border-ds-border-strong/70 bg-ds-surface px-3 py-2 shadow-lg"
+								style={{
+									left: `${Math.min(92, Math.max(8, hoveredPercent))}%`,
+								}}
+							>
+								<div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ds-text-tertiary">
+									{formatShortDate(hoveredPoint.date)}
+								</div>
+								<div className="mt-1 space-y-1 text-xs text-ds-text-secondary">
+									<div className="flex items-center justify-between gap-2">
+										<span className="inline-flex items-center gap-1">
+											<span className="inline-block h-2 w-2 rounded-full bg-ds-accent" />
+											Views
+										</span>
+										<span className="font-semibold text-ds-fg">
+											{hoveredPoint.scans.toLocaleString()}
+										</span>
+									</div>
+									<div className="flex items-center justify-between gap-2">
+										<span className="inline-flex items-center gap-1">
+											<span className="inline-block h-2 w-2 rounded-[2px] bg-ds-border-strong/80" />
+											Active codes
+										</span>
+										<span className="font-semibold text-ds-fg">
+											{hoveredPoint.uniqueQrCodes.toLocaleString()}
+										</span>
+									</div>
+								</div>
+							</div>
+						) : null}
 						<svg
 							viewBox={`0 0 ${chartWidth} ${chartHeight}`}
 							className="h-full w-full"
+							onPointerMove={handleChartPointerMove}
+							onPointerEnter={handleChartPointerMove}
+							onPointerLeave={() => setHoveredIndex(null)}
 						>
 							<title>Views over time</title>
 							{gridLines.map((y) => (
@@ -327,12 +406,24 @@ function DailyScanTrend({
 									strokeLinecap="round"
 								/>
 							) : null}
+							{hoveredPoint ? (
+								<line
+									x1={hoveredPoint.x}
+									y1={chartTop}
+									x2={hoveredPoint.x}
+									y2={chartBottom}
+									stroke="currentColor"
+									className="text-ds-accent/50"
+									strokeWidth="0.9"
+									strokeDasharray="2 2"
+								/>
+							) : null}
 							{markerPoints.map((point) => (
 								<circle
 									key={`${point.date}-point`}
 									cx={point.x}
 									cy={point.y}
-									r="1.1"
+									r={hoveredPoint?.date === point.date ? "1.8" : "1.1"}
 									fill="currentColor"
 									className="text-ds-accent"
 								/>
@@ -442,8 +533,8 @@ function DestinationHitBreakdown({
 				) : null}
 				{noHitCount > 0 ? (
 					<div className="text-xs text-ds-text-secondary">
-						{noHitCount} destination{noHitCount === 1 ? "" : "s"} had no
-						views in this range.
+						{noHitCount} destination{noHitCount === 1 ? "" : "s"} had no views
+						in this range.
 					</div>
 				) : null}
 			</div>

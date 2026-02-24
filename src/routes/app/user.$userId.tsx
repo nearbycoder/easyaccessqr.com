@@ -93,7 +93,7 @@ function UserProfilePage({ userId }: { userId: string }) {
 
 	if (profileQuery.isLoading && !profile) {
 		return (
-			<div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:p-6">
+			<div className="mx-auto w-full max-w-[1320px]">
 				<div className="h-36 animate-pulse border-2 border-ds-muted3 rounded-xl bg-ds-surface/20" />
 				<div className="mt-4 h-56 animate-pulse border-2 border-ds-muted3 rounded-xl bg-ds-surface/20" />
 			</div>
@@ -102,7 +102,7 @@ function UserProfilePage({ userId }: { userId: string }) {
 
 	if (profileQuery.isError || !profile) {
 		return (
-			<div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:p-6">
+			<div className="mx-auto w-full max-w-[1320px]">
 				<div className="border-2 border-red-500/60 bg-red-500/5 px-4 py-3 text-sm text-red-400">
 					Profile Load Error{" "}
 					{profileQuery.error instanceof Error
@@ -114,7 +114,7 @@ function UserProfilePage({ userId }: { userId: string }) {
 	}
 
 	return (
-		<div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:p-6">
+		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-6 flex flex-wrap items-start justify-between gap-3">
 				<div className="flex items-center gap-3">
 					<div className="flex h-12 w-12 items-center justify-center bg-ds-accent text-sm font-extrabold text-ds-accent-fg">

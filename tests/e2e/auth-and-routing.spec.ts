@@ -34,9 +34,11 @@ test.describe("auth pages and unauthenticated routing", () => {
 	test("unknown route renders 404", async ({ page }) => {
 		await page.goto("/this-route-does-not-exist");
 
-		await expect(page.getByRole("heading", { name: "404" })).toBeVisible();
-		await expect(page.getByText("Page Not Found")).toBeVisible();
-		await expect(page.getByRole("link", { name: "Go Home →" })).toBeVisible();
+		await expect(page.getByText("404 · Page not found")).toBeVisible();
+		await expect(
+			page.getByRole("heading", { name: "This page does not exist" }),
+		).toBeVisible();
+		await expect(page.getByRole("link", { name: "Go home" })).toBeVisible();
 	});
 
 	test("app route redirects unauthenticated users to sign in", async ({

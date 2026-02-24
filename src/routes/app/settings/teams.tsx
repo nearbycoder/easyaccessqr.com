@@ -7,7 +7,7 @@ export const Route = createFileRoute("/app/settings/teams")({
 
 function DeprecatedTeamsPage() {
 	return (
-		<div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:p-6">
+		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="border-2 border-ds-border rounded-2xl bg-ds-surface/60 p-6 sm:p-8">
 				<div className="mb-3 flex items-center gap-2 text-ds-accent">
 					<Users className="h-4 w-4" />

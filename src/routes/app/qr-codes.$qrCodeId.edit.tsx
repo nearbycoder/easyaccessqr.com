@@ -9,7 +9,11 @@ import {
 } from "@/components/qr/qr-design-studio";
 import { useTRPC } from "@/integrations/trpc/react";
 import { authClient } from "@/lib/auth-client";
-import { buildQrShortPath, toAbsoluteUrl } from "@/lib/qr-links";
+import {
+	buildQrPublicPreviewPath,
+	buildQrShortPath,
+	toAbsoluteUrl,
+} from "@/lib/qr-links";
 
 export const Route = createFileRoute("/app/qr-codes/$qrCodeId/edit")({
 	component: EditQrCodePage,
@@ -58,6 +62,13 @@ function EditQrCodePage() {
 			buildQrShortPath(activeOrganizationSlug, targetCode.slug),
 		);
 	}, [activeOrganizationSlug, targetCode]);
+	const publicPreviewUrl = useMemo(() => {
+		if (!targetCode || !activeOrganizationSlug || !targetCode.isPublic)
+			return "";
+		return toAbsoluteUrl(
+			buildQrPublicPreviewPath(activeOrganizationSlug, targetCode.slug),
+		);
+	}, [activeOrganizationSlug, targetCode]);
 
 	if (!Number.isInteger(parsedCodeId) || parsedCodeId <= 0) {
 		return (
@@ -99,6 +110,7 @@ function EditQrCodePage() {
 			name: payload.name,
 			destinationUrl: payload.destinationUrl,
 			destinations: payload.destinations,
+			isPublic: payload.isPublic,
 		});
 	};
 
@@ -124,12 +136,26 @@ function EditQrCodePage() {
 						<span className="font-semibold">{trackingUrl}</span>
 					</p>
 				) : null}
+				{publicPreviewUrl ? (
+					<p className="mt-1 text-sm text-ds-text-secondary">
+						Public page:{" "}
+						<a
+							href={publicPreviewUrl}
+							target="_blank"
+							rel="noreferrer"
+							className="font-semibold text-ds-accent hover:underline"
+						>
+							{publicPreviewUrl}
+						</a>
+					</p>
+				) : null}
 			</div>
 
 			<QrDesignStudio
 				mode="edit"
 				initialName={targetCode.name}
 				initialDestinationUrl={targetCode.destinationUrl}
+				initialIsPublic={targetCode.isPublic}
 				initialDestinations={targetCode.destinations}
 				trackingUrl={trackingUrl}
 				submitPending={updateCode.isPending}

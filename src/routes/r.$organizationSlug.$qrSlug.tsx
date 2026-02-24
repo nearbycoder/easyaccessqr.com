@@ -3,6 +3,7 @@ import {
 	normalizeQrDestinations,
 	pickWeightedDestination,
 } from "@/lib/qr-destinations";
+import { withServerSecurityHeaders } from "@/lib/server-security";
 
 const serverHandlers = import.meta.env.SSR
 	? {
@@ -24,6 +25,7 @@ const serverHandlers = import.meta.env.SSR
 				const qrSlug = normalizeSlug(params.qrSlug);
 				if (!organizationSlug || !qrSlug) {
 					return statusPageResponse({
+						request,
 						status: 404,
 						tag: "Link not found",
 						title: "This QR link does not exist",
@@ -38,6 +40,7 @@ const serverHandlers = import.meta.env.SSR
 				});
 				if (!org) {
 					return statusPageResponse({
+						request,
 						status: 404,
 						tag: "Link not found",
 						title: "This QR link does not exist",
@@ -53,15 +56,18 @@ const serverHandlers = import.meta.env.SSR
 					),
 					columns: {
 						id: true,
+						name: true,
 						organizationId: true,
 						destinationUrl: true,
 						destinations: true,
 						isActive: true,
+						isPublic: true,
 					},
 				});
 
 				if (!code) {
 					return statusPageResponse({
+						request,
 						status: 404,
 						tag: "Link not found",
 						title: "This QR link does not exist",
@@ -70,8 +76,32 @@ const serverHandlers = import.meta.env.SSR
 					});
 				}
 
+				const requestUrl = new URL(request.url);
+				if (isPublicPreviewRequest(requestUrl)) {
+					if (!code.isPublic) {
+						return statusPageResponse({
+							request,
+							status: 404,
+							tag: "Not public",
+							title: "This QR page is private",
+							description:
+								"This QR code is not currently shared as a public page.",
+						});
+					}
+
+					const shortPath = `/r/${organizationSlug}/${qrSlug}`;
+					const shortUrl = new URL(shortPath, requestUrl.origin).toString();
+					return publicQrPageResponse({
+						request,
+						name: code.name,
+						shortUrl,
+						destinationUrl: code.destinationUrl,
+					});
+				}
+
 				if (!code.isActive) {
 					return statusPageResponse({
+						request,
 						status: 410,
 						tag: "Link paused",
 						title: "This QR link is paused",
@@ -94,6 +124,7 @@ const serverHandlers = import.meta.env.SSR
 				);
 				if (!destination) {
 					return statusPageResponse({
+						request,
 						status: 500,
 						tag: "Redirect unavailable",
 						title: "This destination is unavailable",
@@ -111,13 +142,20 @@ const serverHandlers = import.meta.env.SSR
 					...scanPayload,
 				});
 
-				return new Response(null, {
-					status: 302,
-					headers: {
-						location: destination,
-						"cache-control": "no-store",
+				return withServerSecurityHeaders(
+					new Response(null, {
+						status: 302,
+						headers: {
+							location: destination,
+							"cache-control": "no-store",
+						},
+					}),
+					{
+						request,
+						frameOptions: null,
+						referrerPolicy: "no-referrer",
 					},
-				});
+				);
 			},
 		}
 	: {};
@@ -132,19 +170,57 @@ function normalizeSlug(value: string) {
 	return value.trim().toLowerCase();
 }
 
+function isPublicPreviewRequest(url: URL) {
+	const flag =
+		url.searchParams.get("view") ??
+		url.searchParams.get("preview") ??
+		url.searchParams.get("qr");
+	if (!flag) return false;
+	const normalized = flag.trim().toLowerCase();
+	return normalized === "1" || normalized === "true" || normalized === "yes";
+}
+
 function statusPageResponse(input: {
+	request: Request;
 	status: number;
 	tag: string;
 	title: string;
 	description: string;
 }) {
-	return new Response(renderStatusPageHtml(input), {
-		status: input.status,
-		headers: {
-			"cache-control": "no-store",
-			"content-type": "text/html; charset=utf-8",
+	return withServerSecurityHeaders(
+		new Response(renderStatusPageHtml(input), {
+			status: input.status,
+			headers: {
+				"cache-control": "no-store",
+				"content-type": "text/html; charset=utf-8",
+			},
+		}),
+		{
+			request: input.request,
+			referrerPolicy: "no-referrer",
 		},
-	});
+	);
+}
+
+function publicQrPageResponse(input: {
+	request: Request;
+	name: string;
+	shortUrl: string;
+	destinationUrl: string;
+}) {
+	return withServerSecurityHeaders(
+		new Response(renderPublicQrPageHtml(input), {
+			status: 200,
+			headers: {
+				"cache-control": "no-store",
+				"content-type": "text/html; charset=utf-8",
+			},
+		}),
+		{
+			request: input.request,
+			referrerPolicy: "no-referrer",
+		},
+	);
 }
 
 function renderStatusPageHtml(input: {
@@ -156,6 +232,7 @@ function renderStatusPageHtml(input: {
 	const escapedTag = escapeHtml(input.tag);
 	const escapedTitle = escapeHtml(input.title);
 	const escapedDescription = escapeHtml(input.description);
+	const escapedStatus = escapeHtml(String(input.status));
 	return `<!doctype html>
 <html lang="en">
 	<head>
@@ -164,7 +241,7 @@ function renderStatusPageHtml(input: {
 		<title>${escapedTitle} | Easy Access QR</title>
 		<style>
 			:root {
-				color-scheme: light;
+				color-scheme: dark;
 			}
 			* { box-sizing: border-box; }
 			body {
@@ -175,26 +252,35 @@ function renderStatusPageHtml(input: {
 				padding: 24px;
 				font-family: "Sora", "Avenir Next", "Segoe UI", sans-serif;
 				background:
-					radial-gradient(circle at top right, rgba(55, 138, 136, 0.14), transparent 40%),
-					radial-gradient(circle at bottom left, rgba(222, 99, 70, 0.16), transparent 38%),
-					#f6f8f7;
-				color: #1f2a2b;
+					radial-gradient(circle at 16% 12%, rgba(58, 159, 156, 0.2), transparent 36%),
+					radial-gradient(circle at 84% 88%, rgba(222, 99, 70, 0.14), transparent 42%),
+					linear-gradient(135deg, #11181d 0%, #192127 52%, #121a20 100%);
+				color: #edf4f4;
 			}
 			.shell {
-				width: min(640px, 100%);
-				border: 1px solid #b7c7c1;
-				border-radius: 24px;
-				background: #ffffff;
-				padding: 36px 32px;
-				box-shadow: 0 22px 70px rgba(31, 42, 43, 0.12);
+				width: min(680px, 100%);
+				border: 1px solid #3a474a;
+				border-radius: 28px;
+				background: linear-gradient(165deg, rgba(30, 40, 46, 0.96), rgba(24, 34, 40, 0.97));
+				padding: 34px 30px;
+				box-shadow:
+					0 28px 90px rgba(0, 0, 0, 0.48),
+					inset 0 1px 0 rgba(255, 255, 255, 0.05);
 			}
 			.brand {
-				margin: 0 0 20px;
-				font-size: 34px;
+				margin: 0;
+				font-size: clamp(38px, 5vw, 48px);
 				line-height: 1;
 				font-weight: 800;
 				letter-spacing: -0.03em;
 				color: #de6346;
+			}
+			.status-row {
+				margin-top: 20px;
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 10px;
 			}
 			.tag {
 				display: inline-flex;
@@ -202,25 +288,39 @@ function renderStatusPageHtml(input: {
 				gap: 8px;
 				padding: 6px 12px;
 				border-radius: 999px;
-				border: 1px solid #b7c7c1;
+				border: 1px solid #445659;
 				font-size: 12px;
 				font-weight: 700;
-				letter-spacing: 0.03em;
+				letter-spacing: 0.035em;
 				text-transform: uppercase;
-				color: #3a5051;
-				background: #edf4f2;
+				color: #c9d7d8;
+				background: rgba(67, 81, 86, 0.42);
+			}
+			.code {
+				display: inline-flex;
+				align-items: center;
+				padding: 5px 12px;
+				border-radius: 999px;
+				border: 1px solid #4b5b5f;
+				font-size: 12px;
+				font-weight: 800;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+				color: #9fd8d4;
+				background: rgba(62, 149, 145, 0.16);
 			}
 			h1 {
 				margin: 16px 0 12px;
 				font-size: clamp(30px, 4.2vw, 42px);
-				line-height: 1.08;
+				line-height: 1.1;
 				letter-spacing: -0.03em;
+				color: #f0f6f6;
 			}
 			p {
 				margin: 0;
 				font-size: 18px;
 				line-height: 1.55;
-				color: #4f6461;
+				color: #b7c5c6;
 			}
 			.actions {
 				margin-top: 26px;
@@ -232,32 +332,276 @@ function renderStatusPageHtml(input: {
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				height: 44px;
+				height: 45px;
 				padding: 0 18px;
 				border-radius: 12px;
 				text-decoration: none;
 				font-size: 15px;
 				font-weight: 700;
-				border: 1px solid #b7c7c1;
-				color: #243435;
-				background: #ffffff;
+				border: 1px solid #49575a;
+				color: #e3ecec;
+				background: rgba(58, 70, 75, 0.4);
+				transition: filter 140ms ease, background-color 140ms ease;
 			}
 			.btn.primary {
-				border-color: #2e8986;
-				background: #2e8986;
-				color: #f8ffff;
+				border-color: #399794;
+				background: #399794;
+				color: #f3fbfb;
+			}
+			.btn:hover {
+				filter: brightness(1.08);
 			}
 		</style>
 	</head>
 	<body>
 		<main class="shell">
 			<div class="brand">Easy Access QR</div>
-			<div class="tag">${escapedTag}</div>
+			<div class="status-row">
+				<div class="tag">${escapedTag}</div>
+				<div class="code">Status ${escapedStatus}</div>
+			</div>
 			<h1>${escapedTitle}</h1>
 			<p>${escapedDescription}</p>
 			<div class="actions">
 				<a class="btn primary" href="https://easyaccessqr.com">Visit easyaccessqr.com</a>
 				<a class="btn" href="#" onclick="window.history.back(); return false;">Go back</a>
+			</div>
+		</main>
+	</body>
+</html>`;
+}
+
+function renderPublicQrPageHtml(input: {
+	name: string;
+	shortUrl: string;
+	destinationUrl: string;
+}) {
+	const escapedName = escapeHtml(input.name);
+	const escapedShortUrl = escapeHtml(input.shortUrl);
+	const escapedDestinationUrl = escapeHtml(input.destinationUrl);
+	const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=640x640&format=svg&ecc=Q&margin=12&data=${encodeURIComponent(input.shortUrl)}`;
+	const escapedQrImageUrl = escapeHtml(qrImageUrl);
+
+	return `<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>${escapedName} | Easy Access QR</title>
+		<style>
+			:root {
+				color-scheme: light dark;
+				--bg-0: #edf2f1;
+				--bg-1: #f7faf9;
+				--bg-accent-a: rgba(47, 127, 124, 0.14);
+				--bg-accent-b: rgba(222, 99, 70, 0.14);
+				--surface: rgba(255, 255, 255, 0.94);
+				--surface-soft: #f5f8f7;
+				--border: #b7c7c1;
+				--border-strong: #a9bcb5;
+				--text: #1f2a2b;
+				--text-muted: #4f6461;
+				--accent: #2f7f7c;
+				--accent-strong: #2d8b88;
+				--brand: #de6346;
+				--badge-bg: rgba(47, 127, 124, 0.08);
+				--btn-bg: rgba(255, 255, 255, 0.7);
+				--shadow: 0 24px 70px rgba(31, 42, 43, 0.14);
+			}
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--bg-0: #11181d;
+					--bg-1: #1a2329;
+					--bg-accent-a: rgba(61, 168, 164, 0.18);
+					--bg-accent-b: rgba(222, 99, 70, 0.12);
+					--surface: rgba(29, 39, 45, 0.94);
+					--surface-soft: rgba(35, 46, 53, 0.92);
+					--border: #3a4a4d;
+					--border-strong: #4a5d61;
+					--text: #edf4f4;
+					--text-muted: #b3c2c3;
+					--accent: #5ac1bc;
+					--accent-strong: #3b9a96;
+					--brand: #e37055;
+					--badge-bg: rgba(90, 193, 188, 0.12);
+					--btn-bg: rgba(31, 44, 51, 0.55);
+					--shadow: 0 30px 85px rgba(0, 0, 0, 0.45);
+				}
+			}
+			* { box-sizing: border-box; }
+			body {
+				margin: 0;
+				min-height: 100vh;
+				padding: 24px;
+				display: grid;
+				place-items: center;
+				font-family: "Sora", "Avenir Next", "Segoe UI", sans-serif;
+				background:
+					radial-gradient(circle at top left, var(--bg-accent-a), transparent 38%),
+					radial-gradient(circle at bottom right, var(--bg-accent-b), transparent 42%),
+					linear-gradient(165deg, var(--bg-1), var(--bg-0));
+				color: var(--text);
+			}
+			.shell {
+				width: min(980px, 100%);
+				border: 1px solid var(--border);
+				border-radius: 26px;
+				background: var(--surface);
+				padding: 24px;
+				box-shadow: var(--shadow);
+				backdrop-filter: blur(6px);
+			}
+			.header {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: end;
+				justify-content: space-between;
+				gap: 10px;
+			}
+			.brand {
+				margin: 0;
+				font-size: clamp(34px, 4.2vw, 48px);
+				line-height: 1;
+				font-weight: 800;
+				letter-spacing: -0.03em;
+				color: var(--brand);
+			}
+			.subtitle {
+				margin: 10px 0 0;
+				font-size: 15px;
+				color: var(--text-muted);
+			}
+			.badge {
+				display: inline-flex;
+				align-items: center;
+				padding: 6px 11px;
+				border-radius: 999px;
+				border: 1px solid var(--border-strong);
+				font-size: 11px;
+				font-weight: 700;
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+				color: var(--accent);
+				background: var(--badge-bg);
+			}
+			.layout {
+				margin-top: 18px;
+				display: grid;
+				gap: 18px;
+				grid-template-columns: minmax(0, 1fr);
+			}
+			@media (min-width: 880px) {
+				.layout {
+					grid-template-columns: minmax(0, 430px) minmax(0, 1fr);
+					align-items: start;
+				}
+			}
+			.preview {
+				border: 1px solid var(--border);
+				border-radius: 18px;
+				padding: 14px;
+				background: var(--surface-soft);
+			}
+			.preview img {
+				display: block;
+				width: 100%;
+				aspect-ratio: 1/1;
+				height: auto;
+				background: #fff;
+				border-radius: 14px;
+				border: 1px solid var(--border);
+			}
+			.meta {
+				border: 1px solid var(--border);
+				border-radius: 18px;
+				padding: 18px;
+				background: var(--surface-soft);
+			}
+			.meta h1 {
+				margin: 0 0 12px;
+				font-size: clamp(30px, 3.6vw, 52px);
+				line-height: 1.1;
+				letter-spacing: -0.03em;
+				color: var(--text);
+			}
+			.label {
+				font-size: 12px;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				color: var(--text-muted);
+				font-weight: 700;
+				margin: 14px 0 6px;
+			}
+			.value {
+				margin: 0;
+				font-size: 15px;
+				line-height: 1.5;
+				color: var(--text);
+				word-break: break-word;
+			}
+			.value a {
+				color: var(--accent);
+				font-weight: 700;
+				text-decoration: none;
+			}
+			.value a:hover {
+				text-decoration: underline;
+			}
+			.actions {
+				margin-top: 18px;
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+			}
+			.btn {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				height: 42px;
+				padding: 0 16px;
+				border-radius: 12px;
+				text-decoration: none;
+				font-size: 14px;
+				font-weight: 700;
+				border: 1px solid var(--border-strong);
+				color: var(--text);
+				background: var(--btn-bg);
+				transition: filter 130ms ease, background-color 130ms ease;
+			}
+			.btn.primary {
+				border-color: var(--accent-strong);
+				background: var(--accent-strong);
+				color: #f7fcfc;
+			}
+			.btn:hover {
+				filter: brightness(1.06);
+			}
+		</style>
+	</head>
+	<body>
+		<main class="shell">
+			<header class="header">
+				<div>
+					<h2 class="brand">Easy Access QR</h2>
+					<p class="subtitle">Public QR page</p>
+				</div>
+				<span class="badge">Shared QR</span>
+			</header>
+			<div class="layout">
+				<div class="preview">
+					<img src="${escapedQrImageUrl}" alt="QR code for ${escapedName}" />
+				</div>
+				<section class="meta">
+					<h1>${escapedName}</h1>
+					<div class="label">Tracked short link</div>
+					<p class="value"><a href="${escapedShortUrl}" target="_blank" rel="noreferrer">${escapedShortUrl}</a></p>
+					<div class="label">Primary destination</div>
+					<p class="value"><a href="${escapedDestinationUrl}" target="_blank" rel="noreferrer">${escapedDestinationUrl}</a></p>
+					<div class="actions">
+						<a class="btn primary" href="${escapedShortUrl}" target="_blank" rel="noreferrer">Open tracked link</a>
+						<a class="btn" href="https://easyaccessqr.com" target="_blank" rel="noreferrer">Visit Easy Access QR</a>
+					</div>
+				</section>
 			</div>
 		</main>
 	</body>
@@ -280,8 +624,14 @@ function buildDestinationUrl(request: Request, destinationUrl: string) {
 			return null;
 		}
 		const source = new URL(request.url);
+		const blockedQueryParamKeys = new Set(["view", "preview", "qr"]);
+		let appendedCount = 0;
 		for (const [key, value] of source.searchParams.entries()) {
+			if (blockedQueryParamKeys.has(key.toLowerCase())) continue;
+			if (key.length > 128 || value.length > 512) continue;
+			if (appendedCount >= 24) break;
 			destination.searchParams.append(key, value);
+			appendedCount += 1;
 		}
 		return destination.toString();
 	} catch {
@@ -326,12 +676,24 @@ function getForwardedIp(headers: Headers) {
 	const forwarded = headers.get("x-forwarded-for");
 	if (!forwarded) return undefined;
 	const [first] = forwarded.split(",");
-	return first?.trim() || undefined;
+	const candidate = first?.trim();
+	return sanitizeIpAddress(candidate);
 }
+
+let didWarnAboutMissingIpSalt = false;
 
 async function hashIpAddress(ipAddress: string | undefined) {
 	if (!ipAddress) return undefined;
-	const salt = process.env.QR_IP_HASH_SALT ?? "";
+	const salt = (process.env.QR_IP_HASH_SALT ?? "").trim();
+	if (salt.length < 16) {
+		if (!didWarnAboutMissingIpSalt) {
+			didWarnAboutMissingIpSalt = true;
+			console.warn(
+				"[qr-redirect] QR_IP_HASH_SALT is missing or too short. IP hash capture is disabled.",
+			);
+		}
+		return undefined;
+	}
 	const value = `${salt}:${ipAddress}`;
 	const encoded = new TextEncoder().encode(value);
 	const digest = await crypto.subtle.digest("SHA-256", encoded);
@@ -342,11 +704,11 @@ async function hashIpAddress(ipAddress: string | undefined) {
 }
 
 async function extractScanPayload(request: Request) {
-	const userAgent = request.headers.get("user-agent")?.trim() || undefined;
-	const referrer = request.headers.get("referer")?.trim() || undefined;
+	const userAgent = sanitizePlainText(request.headers.get("user-agent"), 512);
+	const referrer = sanitizeReferrer(request.headers.get("referer"));
 	const ipAddress =
 		getForwardedIp(request.headers) ??
-		request.headers.get("x-real-ip")?.trim() ??
+		sanitizeIpAddress(request.headers.get("x-real-ip")) ??
 		undefined;
 
 	return {
@@ -355,15 +717,84 @@ async function extractScanPayload(request: Request) {
 		userAgent,
 		ipHash: await hashIpAddress(ipAddress),
 		country:
-			readHeader(request.headers, [
-				"x-vercel-ip-country",
-				"cf-ipcountry",
-				"x-country",
-			]) ?? undefined,
+			sanitizeLocationText(
+				readHeader(request.headers, [
+					"x-vercel-ip-country",
+					"cf-ipcountry",
+					"x-country",
+				]),
+			) ?? undefined,
 		city:
-			readHeader(request.headers, ["x-vercel-ip-city", "x-city"]) ?? undefined,
+			sanitizeLocationText(
+				readHeader(request.headers, ["x-vercel-ip-city", "x-city"]),
+			) ?? undefined,
 		deviceType: detectDeviceType(userAgent ?? null),
 	};
+}
+
+function sanitizePlainText(value: string | null, maxLength: number) {
+	if (!value) return undefined;
+	const cleaned = Array.from(value)
+		.filter((character) => {
+			const codePoint = character.charCodeAt(0);
+			return codePoint >= 32 && codePoint !== 127;
+		})
+		.join("")
+		.trim();
+	if (!cleaned) return undefined;
+	return cleaned.slice(0, maxLength);
+}
+
+function sanitizeReferrer(value: string | null) {
+	const cleaned = sanitizePlainText(value, 2048);
+	if (!cleaned) return undefined;
+	try {
+		const parsed = new URL(cleaned);
+		if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+			return undefined;
+		}
+		return `${parsed.origin}${parsed.pathname}`;
+	} catch {
+		return undefined;
+	}
+}
+
+function sanitizeLocationText(value: string | undefined) {
+	if (!value) return undefined;
+	const cleaned = value.replace(/[^a-zA-Z0-9 .,'-]/g, "").trim();
+	if (!cleaned) return undefined;
+	return cleaned.slice(0, 80);
+}
+
+function sanitizeIpAddress(value: string | null | undefined) {
+	if (!value) return undefined;
+	const trimmed = value.trim();
+	if (!trimmed) return undefined;
+
+	const bracketMatch = /^\[([0-9a-fA-F:]+)](?::\d+)?$/.exec(trimmed);
+	const normalizedCandidate = bracketMatch?.[1] ?? trimmed;
+	const ipv4WithPortMatch = /^(\d{1,3}(?:\.\d{1,3}){3})(?::\d{1,5})?$/.exec(
+		normalizedCandidate,
+	);
+	const candidate = ipv4WithPortMatch?.[1] ?? normalizedCandidate;
+
+	if (/^(\d{1,3}\.){3}\d{1,3}$/.test(candidate)) {
+		const segments = candidate.split(".").map((part) => Number(part));
+		const isValidIpv4 = segments.every(
+			(segment) => Number.isInteger(segment) && segment >= 0 && segment <= 255,
+		);
+		return isValidIpv4 ? candidate : undefined;
+	}
+
+	if (
+		candidate.includes(":") &&
+		candidate.length <= 45 &&
+		/^[0-9a-fA-F:]+$/.test(candidate)
+	) {
+		return candidate.toLowerCase();
+	}
+
+	return undefined;
 }
 
 async function trackScan(input: {

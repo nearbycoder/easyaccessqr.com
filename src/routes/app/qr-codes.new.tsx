@@ -36,6 +36,7 @@ function NewQrCodePage() {
 			name: payload.name,
 			destinationUrl: payload.destinationUrl,
 			destinations: payload.destinations,
+			isPublic: payload.isPublic,
 			slug: preferredSlug || undefined,
 		});
 		if (created?.slug && preferredSlug && created.slug !== preferredSlug) {

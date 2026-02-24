@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "@/integrations/trpc/react";
 import { authClient } from "@/lib/auth-client";
+import { getPlanDisplayName } from "@/lib/plan-config";
 
 export const Route = createFileRoute("/app/settings/billing")({
 	component: BillingPage,
@@ -13,42 +14,40 @@ export const Route = createFileRoute("/app/settings/billing")({
 
 const plans = [
 	{
-		name: "Free",
+		name: "Starter",
 		id: "free",
 		price: "$0",
-		period: "/forever",
-		features: ["25 QR codes", "5 members", "7-day analytics", "QR management"],
+		period: "/month",
+		features: [
+			"Up to 3 active QR codes",
+			"Basic view analytics",
+			"One organization workspace",
+		],
 		comingSoon: false,
 	},
 	{
-		name: "Pro",
+		name: "Growth",
 		id: "pro",
-		price: "$16",
-		period: "/mo",
+		price: "$29",
+		period: "/month",
 		popular: true,
 		comingSoon: true,
 		features: [
-			"500 QR codes",
-			"15 members",
-			"90-day analytics",
-			"Basic analytics",
-			"QR API access",
+			"Up to 100 active QR codes",
+			"Advanced analytics and exports",
+			"Member access controls",
 		],
 	},
 	{
-		name: "Business",
+		name: "Scale",
 		id: "business",
-		price: "$65",
-		period: "/mo",
+		price: "Custom",
+		period: "",
 		comingSoon: true,
 		features: [
-			"Unlimited QR codes",
-			"Unlimited members",
-			"Unlimited analytics history",
-			"Advanced analytics",
-			"QR API access",
-			"Slack integration",
+			"Unlimited active QR codes",
 			"Priority support",
+			"Custom onboarding and SLA",
 		],
 	},
 ];
@@ -75,7 +74,7 @@ function BillingPage() {
 
 	if (!canManageOrganization) {
 		return (
-			<div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:p-6">
+			<div className="mx-auto w-full max-w-[1320px]">
 				<div className="mb-8">
 					<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
 						Billing
@@ -170,7 +169,7 @@ function BillingPage() {
 	const isOrgScoped = sub?.scope === "organization";
 
 	return (
-		<div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:p-6">
+		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-8">
 				<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
 					Billing
@@ -189,7 +188,7 @@ function BillingPage() {
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 						<div>
 							<div className="font-extrabold tracking-wide text-sm">
-								Current Subscription: {String(currentPlan)}
+								Current Subscription: {getPlanDisplayName(currentPlan)}
 							</div>
 							<div className="text-ds-muted text-xs mt-1">
 								{isOrgScoped ? "Organization scoped" : "User scoped"}

@@ -13,7 +13,9 @@ test.describe("legal pages", () => {
 		).toBeVisible();
 		await expect(page.getByText("Easy Access QR").first()).toBeVisible();
 		await expect(page.getByText("Effective date:")).toBeVisible();
-		await expect(page.getByRole("link", { name: "Back Home" })).toBeVisible();
+		await expect(
+			page.getByRole("link", { name: "Terms of service" }).last(),
+		).toBeVisible();
 		await expect(
 			page.getByRole("link", { name: "Privacy policy" }).last(),
 		).toBeVisible();

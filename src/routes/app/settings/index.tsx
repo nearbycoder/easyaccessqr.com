@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CreditCard, KeyRound, LockKeyhole } from "lucide-react";
+import { CreditCard, LockKeyhole } from "lucide-react";
 import { useTRPC } from "@/integrations/trpc/react";
 
 export const Route = createFileRoute("/app/settings/")({
@@ -20,7 +20,7 @@ function SettingsIndex() {
 		.replace(/\b\w/g, (char) => char.toUpperCase());
 
 	return (
-		<div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:p-6">
+		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-8">
 				<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
 					Settings
@@ -72,15 +72,6 @@ function SettingsIndex() {
 						<div className="font-extrabold text-sm tracking-wide">Security</div>
 						<div className="mt-1 block overflow-hidden text-ellipsis whitespace-nowrap text-ds-muted text-xs">
 							Password &amp; sessions
-						</div>
-					</div>
-				</Link>
-				<Link to="/app/settings/api-keys">
-					<div className="h-full min-h-[140px] border-2 border-ds-border rounded-2xl bg-ds-surface/60 p-6 hover:bg-ds-surface hover:border-ds-muted2 transition-all cursor-pointer group">
-						<KeyRound className="w-6 h-6 text-lime-600 dark:text-lime-400 mb-3" />
-						<div className="font-extrabold text-sm tracking-wide">Api Keys</div>
-						<div className="mt-1 block overflow-hidden text-ellipsis whitespace-nowrap text-ds-muted text-xs">
-							External integrations
 						</div>
 					</div>
 				</Link>

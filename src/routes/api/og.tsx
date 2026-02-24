@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { withServerSecurityHeaders } from "@/lib/server-security";
 
 type OgPage = "home" | "docs" | "privacy" | "terms";
 
@@ -99,12 +100,18 @@ const serverHandlers = import.meta.env.SSR
 				);
 				const svg = buildSvg(theme.label, title, subtitle, theme.accent);
 
-				return new Response(svg, {
-					headers: {
-						"content-type": "image/svg+xml; charset=utf-8",
-						"cache-control": "public, max-age=3600",
+				return withServerSecurityHeaders(
+					new Response(svg, {
+						headers: {
+							"content-type": "image/svg+xml; charset=utf-8",
+							"cache-control": "public, max-age=3600",
+						},
+					}),
+					{
+						request,
+						frameOptions: null,
 					},
-				});
+				);
 			},
 		}
 	: {};

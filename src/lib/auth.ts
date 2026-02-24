@@ -16,11 +16,24 @@ import {
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const betterAuthSecret = (process.env.BETTER_AUTH_SECRET ?? "").trim();
 const resetPasswordTokenExpiresInSeconds = (() => {
 	const value = Number(process.env.RESET_PASSWORD_TOKEN_EXPIRES_IN ?? "3600");
 	if (!Number.isFinite(value) || value <= 0) return 3600;
 	return Math.floor(value);
 })();
+
+if (process.env.NODE_ENV === "production" && betterAuthSecret.length < 32) {
+	throw new Error(
+		"BETTER_AUTH_SECRET must be at least 32 characters in production.",
+	);
+}
+
+if (process.env.NODE_ENV !== "production" && betterAuthSecret.length < 32) {
+	console.warn(
+		"[auth] BETTER_AUTH_SECRET should be at least 32 characters for secure local testing.",
+	);
+}
 
 function parseBooleanEnv(value: string | undefined): boolean | null {
 	if (!value) return null;
