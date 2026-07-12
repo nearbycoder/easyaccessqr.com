@@ -13,6 +13,15 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { NativeSelect } from "@/components/ui/native-select";
 import { UserNameLink } from "@/components/user-name-link";
 import { useTRPC } from "@/integrations/trpc/react";
@@ -34,9 +43,12 @@ function MembersPage() {
 	const posthog = usePostHog();
 	const queryClient = useQueryClient();
 	const { data: session } = authClient.useSession();
-	const { data: members, isLoading } = useQuery(
-		trpc.org.listMembers.queryOptions(),
-	);
+	const {
+		data: members,
+		isLoading,
+		isError,
+		refetch,
+	} = useQuery(trpc.org.listMembers.queryOptions());
 	const memberList: OrganizationMember[] = members ?? [];
 	const [email, setEmail] = useState("");
 	const [inviting, setInviting] = useState(false);
@@ -49,6 +61,8 @@ function MembersPage() {
 		Record<string, string>
 	>({});
 	const [busyMemberAction, setBusyMemberAction] = useState<string | null>(null);
+	const [deactivateCandidate, setDeactivateCandidate] =
+		useState<OrganizationMember | null>(null);
 
 	const handleInvite = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -178,11 +192,6 @@ function MembersPage() {
 
 	const handleDeactivateMember = async (member: OrganizationMember) => {
 		if (!canManageMembers) return;
-		const confirmed = window.confirm(
-			`Deactivate ${member.name}? They will be removed from this organization and can be re-invited later.`,
-		);
-		if (!confirmed) return;
-
 		setBusyMemberAction(`deactivate:${member.memberId}`);
 		const result = await authClient.organization.removeMember({
 			memberIdOrEmail: member.memberId,
@@ -206,6 +215,7 @@ function MembersPage() {
 				description: `${member.name} no longer has organization access.`,
 			});
 			await queryClient.invalidateQueries();
+			setDeactivateCandidate(null);
 		}
 		setBusyMemberAction(null);
 	};
@@ -237,6 +247,7 @@ function MembersPage() {
 						>
 							<input
 								type="email"
+								aria-label="Member email"
 								placeholder="colleague@company.com"
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
@@ -280,6 +291,7 @@ function MembersPage() {
 						<div className="relative">
 							<Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ds-muted2" />
 							<input
+								aria-label="Search members"
 								value={searchValue}
 								onChange={(event) => setSearchValue(event.target.value)}
 								placeholder="Search by name or email..."
@@ -289,6 +301,7 @@ function MembersPage() {
 						<div className="relative">
 							<Filter className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ds-muted2" />
 							<NativeSelect
+								aria-label="Filter members by role"
 								value={roleFilter}
 								onChange={(event) => setRoleFilter(event.target.value)}
 								className="border-[2px] border-ds-muted3 bg-ds-input-bg py-2 pl-9 text-xs font-bold tracking-wide text-ds-text-secondary focus:border-ds-accent focus:outline-none"
@@ -304,7 +317,20 @@ function MembersPage() {
 						</div>
 					</div>
 				</div>
-				{isLoading ? (
+				{isError ? (
+					<div role="alert" className="space-y-3 p-6">
+						<p className="font-semibold text-red-700 dark:text-red-300">
+							Members could not be loaded.
+						</p>
+						<button
+							type="button"
+							onClick={() => void refetch()}
+							className="inline-flex h-9 items-center rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent"
+						>
+							Try again
+						</button>
+					</div>
+				) : isLoading ? (
 					<div className="p-6">
 						{[1, 2, 3].map((i) => (
 							<div key={i} className="h-10 bg-ds-surface mb-2 animate-pulse" />
@@ -354,6 +380,7 @@ function MembersPage() {
 											{canManageMembers ? (
 												<>
 													<NativeSelect
+														aria-label={`Role for ${member.name}`}
 														value={selectedRole}
 														onChange={(event) =>
 															updateDraftRole(
@@ -374,6 +401,7 @@ function MembersPage() {
 													</NativeSelect>
 													<button
 														type="button"
+														aria-label={`Save role for ${member.name}`}
 														onClick={() => void handleSaveRole(member)}
 														disabled={
 															isBusy || isSelf || selectedRole === member.role
@@ -385,7 +413,8 @@ function MembersPage() {
 													</button>
 													<button
 														type="button"
-														onClick={() => void handleDeactivateMember(member)}
+														aria-label={`Deactivate ${member.name}`}
+														onClick={() => setDeactivateCandidate(member)}
 														disabled={isBusy || isSelf}
 														className="inline-flex items-center gap-1 border-[2px] border-red-500/70 px-2 py-1 text-[10px] font-extrabold tracking-wide text-red-500 transition-colors hover:border-red-400 hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400"
 													>
@@ -436,6 +465,49 @@ function MembersPage() {
 					</div>
 				)}
 			</div>
+
+			<Dialog
+				open={Boolean(deactivateCandidate)}
+				onOpenChange={(open) => {
+					if (!open && busyMemberAction === null) setDeactivateCandidate(null);
+				}}
+			>
+				<DialogContent className="border border-ds-border bg-ds-surface">
+					<DialogHeader>
+						<DialogTitle>Deactivate member?</DialogTitle>
+						<DialogDescription className="text-ds-text-secondary">
+							{deactivateCandidate
+								? `${deactivateCandidate.name} will lose access to this organization. You can invite them again later.`
+								: "This member will lose access to the organization."}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<DialogClose asChild>
+							<button
+								type="button"
+								disabled={busyMemberAction !== null}
+								className="inline-flex h-10 items-center justify-center rounded-xl border border-ds-border bg-ds-input-bg px-4 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:opacity-60"
+							>
+								Cancel
+							</button>
+						</DialogClose>
+						<button
+							type="button"
+							disabled={!deactivateCandidate || busyMemberAction !== null}
+							onClick={() => {
+								if (deactivateCandidate) {
+									void handleDeactivateMember(deactivateCandidate);
+								}
+							}}
+							className="inline-flex h-10 items-center justify-center rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-red-500 disabled:opacity-60"
+						>
+							{busyMemberAction?.startsWith("deactivate:")
+								? "Deactivating..."
+								: "Deactivate member"}
+						</button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

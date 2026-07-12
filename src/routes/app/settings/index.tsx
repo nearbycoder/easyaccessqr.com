@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CreditCard, LockKeyhole } from "lucide-react";
+import { CreditCard, LockKeyhole, UserRound, Users } from "lucide-react";
 import { useTRPC } from "@/integrations/trpc/react";
 
 export const Route = createFileRoute("/app/settings/")({
@@ -53,6 +53,22 @@ function SettingsIndex() {
 			</div>
 
 			<div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+				<Link
+					to="/app/settings/profile"
+					className="group h-full min-h-[140px] cursor-pointer rounded-2xl border-2 border-ds-border bg-ds-surface/60 p-6 transition-all hover:border-ds-muted2 hover:bg-ds-surface"
+				>
+					<UserRound className="mb-3 h-6 w-6 text-ds-accent" />
+					<div className="text-sm font-extrabold tracking-wide">Profile</div>
+					<div className="mt-1 text-xs text-ds-muted">Public bio</div>
+				</Link>
+				<Link
+					to="/app/settings/members"
+					className="group h-full min-h-[140px] cursor-pointer rounded-2xl border-2 border-ds-border bg-ds-surface/60 p-6 transition-all hover:border-ds-muted2 hover:bg-ds-surface"
+				>
+					<Users className="mb-3 h-6 w-6 text-ds-accent" />
+					<div className="text-sm font-extrabold tracking-wide">People</div>
+					<div className="mt-1 text-xs text-ds-muted">Members &amp; access</div>
+				</Link>
 				{canManageOrganization && (
 					<Link to="/app/settings/billing">
 						<div className="h-full min-h-[140px] border-2 border-ds-border rounded-2xl bg-ds-surface/60 p-6 hover:bg-ds-surface hover:border-ds-muted2 transition-all cursor-pointer group">

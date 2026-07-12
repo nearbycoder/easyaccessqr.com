@@ -130,7 +130,26 @@ function AnalyticsPage() {
 				</div>
 			</div>
 
-			{analyticsQuery.isLoading || !analytics ? (
+			{analyticsQuery.isError ? (
+				<div
+					role="alert"
+					className="rounded-2xl border border-red-500/35 bg-red-500/10 p-5"
+				>
+					<h2 className="text-lg font-semibold text-red-700 dark:text-red-300">
+						Analytics could not be loaded
+					</h2>
+					<p className="mt-1 text-sm text-ds-text-secondary">
+						Check your connection and try again. Your QR codes are unaffected.
+					</p>
+					<button
+						type="button"
+						onClick={() => void analyticsQuery.refetch()}
+						className="mt-4 inline-flex h-10 items-center rounded-xl border border-red-500/45 bg-ds-surface px-4 text-sm font-semibold text-red-700 transition-colors hover:bg-red-500/10 dark:text-red-300"
+					>
+						Try again
+					</button>
+				</div>
+			) : analyticsQuery.isLoading || !analytics ? (
 				<div className="grid grid-cols-1 gap-3 md:grid-cols-4">
 					{[1, 2, 3, 4].map((row) => (
 						<div

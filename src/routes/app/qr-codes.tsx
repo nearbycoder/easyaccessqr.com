@@ -19,6 +19,15 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { QrPreviewModal } from "@/components/qr/qr-preview-modal";
 import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -42,6 +51,7 @@ function QrCodesPage() {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
 	const [previewCodeId, setPreviewCodeId] = useState<number | null>(null);
+	const [deleteCodeId, setDeleteCodeId] = useState<number | null>(null);
 	const { data: session } = authClient.useSession();
 	const { data: organizationsData } = authClient.useListOrganizations();
 	const activeOrganizationSlug = useMemo(() => {
@@ -54,9 +64,12 @@ function QrCodesPage() {
 		);
 	}, [organizationsData, session?.session.activeOrganizationId]);
 
-	const { data: qrCodes, isLoading } = useQuery(
-		trpc.qrCodes.list.queryOptions({ includeInactive: true }),
-	);
+	const {
+		data: qrCodes,
+		isLoading,
+		isError,
+		refetch,
+	} = useQuery(trpc.qrCodes.list.queryOptions({ includeInactive: true }));
 
 	const updateCode = useMutation(
 		trpc.qrCodes.update.mutationOptions({
@@ -72,6 +85,7 @@ function QrCodesPage() {
 	const deleteCode = useMutation(
 		trpc.qrCodes.delete.mutationOptions({
 			onSuccess: async () => {
+				setDeleteCodeId(null);
 				await queryClient.invalidateQueries();
 				toast.success("QR code deleted");
 			},
@@ -86,6 +100,10 @@ function QrCodesPage() {
 		() => sortedCodes.find((code) => code.id === previewCodeId) ?? null,
 		[previewCodeId, sortedCodes],
 	);
+	const deleteCandidate = useMemo(
+		() => sortedCodes.find((code) => code.id === deleteCodeId) ?? null,
+		[deleteCodeId, sortedCodes],
+	);
 	const previewCodePath = useMemo(() => {
 		if (!previewCode) return "";
 		return (
@@ -94,7 +112,7 @@ function QrCodesPage() {
 		);
 	}, [activeOrganizationSlug, previewCode]);
 	const previewPublicPath = useMemo(() => {
-		if (!previewCode || !previewCode.isPublic) return "";
+		if (!previewCode?.isPublic) return "";
 		return buildQrPublicPreviewPath(activeOrganizationSlug, previewCode.slug);
 	}, [activeOrganizationSlug, previewCode]);
 
@@ -128,7 +146,23 @@ function QrCodesPage() {
 						Managed codes
 					</h2>
 				</div>
-				{isLoading ? (
+				{isError ? (
+					<div role="alert" className="space-y-3 px-4 py-6 sm:px-5">
+						<p className="font-semibold text-red-700 dark:text-red-300">
+							QR codes could not be loaded.
+						</p>
+						<p className="text-sm text-ds-text-secondary">
+							Check your connection and try again.
+						</p>
+						<button
+							type="button"
+							onClick={() => void refetch()}
+							className="inline-flex h-9 items-center rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent"
+						>
+							Try again
+						</button>
+					</div>
+				) : isLoading ? (
 					<div className="space-y-2 p-4">
 						{[1, 2, 3].map((row) => (
 							<div
@@ -212,6 +246,7 @@ function QrCodesPage() {
 									<div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
 										<button
 											type="button"
+											aria-label={`View QR for ${code.name}`}
 											onClick={() => setPreviewCodeId(code.id)}
 											className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-ds-border bg-ds-input-bg px-2.5 text-xs font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent sm:px-3 sm:text-sm"
 										>
@@ -222,6 +257,7 @@ function QrCodesPage() {
 											<DropdownMenuTrigger asChild>
 												<button
 													type="button"
+													aria-label={`Actions for ${code.name}`}
 													className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-ds-border bg-ds-input-bg px-2.5 text-xs font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent sm:px-3 sm:text-sm"
 												>
 													Actions
@@ -290,7 +326,7 @@ function QrCodesPage() {
 												<DropdownMenuSeparator className="my-1 bg-ds-border" />
 												<DropdownMenuItem
 													onSelect={() => {
-														void deleteCode.mutateAsync({ id: code.id });
+														setDeleteCodeId(code.id);
 													}}
 													variant="destructive"
 													className="cursor-pointer"
@@ -324,6 +360,47 @@ function QrCodesPage() {
 				}
 				publicPagePath={previewPublicPath}
 			/>
+
+			<Dialog
+				open={Boolean(deleteCandidate)}
+				onOpenChange={(open) => {
+					if (!open && !deleteCode.isPending) setDeleteCodeId(null);
+				}}
+			>
+				<DialogContent className="border border-ds-border bg-ds-surface">
+					<DialogHeader>
+						<DialogTitle>Delete QR code?</DialogTitle>
+						<DialogDescription className="text-ds-text-secondary">
+							{deleteCandidate
+								? `“${deleteCandidate.name}” and its analytics history will be permanently deleted.`
+								: "This QR code and its analytics history will be permanently deleted."}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<DialogClose asChild>
+							<button
+								type="button"
+								disabled={deleteCode.isPending}
+								className="inline-flex h-10 items-center justify-center rounded-xl border border-ds-border bg-ds-input-bg px-4 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:opacity-60"
+							>
+								Cancel
+							</button>
+						</DialogClose>
+						<button
+							type="button"
+							disabled={!deleteCandidate || deleteCode.isPending}
+							onClick={() => {
+								if (deleteCandidate) {
+									void deleteCode.mutateAsync({ id: deleteCandidate.id });
+								}
+							}}
+							className="inline-flex h-10 items-center justify-center rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-red-500 disabled:opacity-60"
+						>
+							{deleteCode.isPending ? "Deleting..." : "Delete permanently"}
+						</button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

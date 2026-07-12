@@ -199,7 +199,7 @@ export interface FileRoutesByFullPath {
   '/app/team/$teamId': typeof AppTeamTeamIdRoute
   '/app/user/$userId': typeof AppUserUserIdRoute
   '/r/$organizationSlug/$qrSlug': typeof ROrganizationSlugQrSlugRoute
-  '/app/settings': typeof AppSettingsIndexRoute
+  '/app/settings/': typeof AppSettingsIndexRoute
   '/app/qr-codes/$qrCodeId/edit': typeof AppQrCodesQrCodeIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -288,7 +288,7 @@ export interface FileRouteTypes {
     | '/app/team/$teamId'
     | '/app/user/$userId'
     | '/r/$organizationSlug/$qrSlug'
-    | '/app/settings'
+    | '/app/settings/'
     | '/app/qr-codes/$qrCodeId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -454,7 +454,7 @@ declare module '@tanstack/react-router' {
     '/app/settings/': {
       id: '/app/settings/'
       path: '/settings'
-      fullPath: '/app/settings'
+      fullPath: '/app/settings/'
       preLoaderRoute: typeof AppSettingsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
@@ -630,6 +630,7 @@ import type { getRouter } from './router.tsx'
 import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
+    ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
   }
 }

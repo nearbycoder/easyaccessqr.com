@@ -88,7 +88,9 @@ type QRCodeStylingInstance = {
 		name?: string;
 		extension?: "png" | "svg" | "jpeg" | "webp";
 	}) => Promise<void>;
-	getRawData?: (extension?: "png" | "svg" | "jpeg" | "webp") => Promise<unknown>;
+	getRawData?: (
+		extension?: "png" | "svg" | "jpeg" | "webp",
+	) => Promise<unknown>;
 };
 
 type QRCodeStylingConstructor = new (
@@ -249,6 +251,7 @@ export function QrDesignStudio({
 		<div className="grid grid-cols-1 gap-5 2xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
 			<form
 				onSubmit={(event) => void handleSubmit(event)}
+				aria-label="QR code design form"
 				className="min-w-0 rounded-2xl border border-ds-border bg-ds-surface p-4 sm:p-6"
 			>
 				<div className="mb-4 flex items-center gap-2 text-ds-accent">
@@ -259,6 +262,7 @@ export function QrDesignStudio({
 				<div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_auto]">
 					<input
 						required
+						aria-label="Campaign name"
 						value={name}
 						onChange={(event) => setName(event.target.value)}
 						placeholder="Campaign landing"
@@ -338,6 +342,7 @@ export function QrDesignStudio({
 								className="grid grid-cols-1 gap-2 rounded-xl border border-ds-border bg-ds-surface2/45 p-2 md:grid-cols-[minmax(0,140px)_minmax(0,1fr)_110px_auto]"
 							>
 								<input
+									aria-label={`Destination ${index + 1} label`}
 									value={destination.label}
 									onChange={(event) =>
 										setDestinations((current) =>
@@ -354,6 +359,7 @@ export function QrDesignStudio({
 								<input
 									required={index === 0}
 									type="url"
+									aria-label={`Destination ${index + 1} URL`}
 									value={destination.url}
 									onChange={(event) =>
 										setDestinations((current) =>
@@ -370,6 +376,7 @@ export function QrDesignStudio({
 								<div className="flex items-center gap-1 overflow-hidden rounded-lg border border-ds-border bg-ds-input-bg px-2">
 									<input
 										type="number"
+										aria-label={`Destination ${index + 1} allocation percent`}
 										min={1}
 										max={Math.max(1, 100 - (destinations.length - 1))}
 										value={destination.weight}
@@ -388,6 +395,7 @@ export function QrDesignStudio({
 								</div>
 								<button
 									type="button"
+									aria-label={`Remove destination ${index + 1}`}
 									onClick={() =>
 										setDestinations((current) => {
 											if (current.length <= 1) return current;
@@ -405,7 +413,10 @@ export function QrDesignStudio({
 							</div>
 						))}
 					</div>
-					<div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+					<div
+						className="mt-3 flex flex-wrap items-center gap-2 text-xs"
+						aria-live="polite"
+					>
 						<span
 							className={
 								destinationWeightTotal === 100
@@ -491,6 +502,7 @@ export function QrDesignStudio({
 							<div className="text-xs text-ds-text-tertiary">Quiet zone</div>
 							<input
 								type="range"
+								aria-label="Quiet zone"
 								min={MIN_QUIET_ZONE}
 								max={MAX_QUIET_ZONE}
 								value={designer.margin}
@@ -514,6 +526,7 @@ export function QrDesignStudio({
 							<div className="text-xs text-ds-text-tertiary">Preview size</div>
 							<input
 								type="range"
+								aria-label="Preview size"
 								min={MIN_PREVIEW_SIZE}
 								max={MAX_PREVIEW_SIZE}
 								step={10}
@@ -583,6 +596,7 @@ export function QrDesignStudio({
 						</div>
 						<div className="grid grid-cols-1 gap-3 2xl:grid-cols-[minmax(0,1fr)_auto]">
 							<input
+								aria-label="Logo URL"
 								value={designer.logoUrl}
 								onChange={(event) =>
 									updateDesigner((current) => ({
@@ -612,6 +626,7 @@ export function QrDesignStudio({
 							<div className="text-xs text-ds-text-tertiary">Logo size</div>
 							<input
 								type="range"
+								aria-label="Logo size"
 								min={10}
 								max={Math.round(MAX_LOGO_SIZE * 100)}
 								step={1}
@@ -1080,6 +1095,7 @@ function SelectField({
 		<div className="min-w-0 rounded-xl border border-ds-border bg-ds-surface2/45 px-3 py-2">
 			<div className="mb-1 text-xs text-ds-text-tertiary">{label}</div>
 			<NativeSelect
+				aria-label={label}
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
 				className="h-9 min-w-0 rounded-lg border border-ds-border bg-ds-input-bg px-2 text-sm text-ds-fg outline-none transition-colors focus:border-ds-accent"
@@ -1110,12 +1126,14 @@ function ColorField({
 			<div className="mb-1 text-xs text-ds-text-tertiary">{label}</div>
 			<div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
 				<input
+					aria-label={`${label} color value`}
 					value={value}
 					onChange={(event) => onChange(event.target.value)}
 					className="h-9 min-w-0 w-full rounded-lg border border-ds-border bg-ds-input-bg px-2 text-sm text-ds-fg outline-none transition-colors placeholder:text-ds-text-tertiary focus:border-ds-accent"
 				/>
 				<input
 					type="color"
+					aria-label={`${label} color picker`}
 					value={safeColorValue}
 					onChange={(event) => onChange(event.target.value)}
 					className="h-9 w-11 cursor-pointer rounded-lg border border-ds-border bg-ds-input-bg p-1"

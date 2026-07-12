@@ -158,6 +158,7 @@ function OrgSetup() {
 						</div>
 					) : null}
 					<input
+						aria-label="Organization name"
 						placeholder="Organization name"
 						value={orgName}
 						onChange={(event) => {
@@ -168,6 +169,7 @@ function OrgSetup() {
 						className="w-full border border-ds-border bg-white px-3 py-2 text-sm"
 					/>
 					<input
+						aria-label="Organization slug"
 						placeholder="organization-slug"
 						value={orgSlug}
 						onChange={(event) => setOrgSlug(event.target.value)}
@@ -234,6 +236,7 @@ function AppShell({
 						<div className="flex items-center gap-2 md:hidden">
 							<button
 								type="button"
+								aria-label="Open app navigation"
 								onClick={() => setMobileNavOpen(true)}
 								className="inline-flex h-9 w-9 items-center justify-center border border-ds-border bg-white text-ds-text-secondary"
 							>

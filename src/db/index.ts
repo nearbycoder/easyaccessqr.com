@@ -4,8 +4,8 @@ import { config as loadEnv } from "dotenv";
 import * as schema from "./schema.ts";
 
 // Local scripts (tsx/bun) do not automatically load env files.
-loadEnv({ path: ".env.local" });
-loadEnv({ path: ".env" });
+loadEnv({ path: ".env.local", quiet: true });
+loadEnv({ path: ".env", quiet: true });
 
 const connectionString = process.env.DATABASE_URL;
 
