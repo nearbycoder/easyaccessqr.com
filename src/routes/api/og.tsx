@@ -242,13 +242,7 @@ const serverHandlers = import.meta.env.SSR
 				);
 				const qrImageUrl = new URL("/qr.png", url).toString();
 				const image = new ImageResponse(
-					buildOgImage(
-						theme.label,
-						title,
-						subtitle,
-						theme.accent,
-						qrImageUrl,
-					),
+					buildOgImage(theme.label, title, subtitle, theme.accent, qrImageUrl),
 					{
 						width: 1200,
 						height: 630,

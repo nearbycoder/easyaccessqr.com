@@ -6,15 +6,22 @@ import {
 	useRouterState,
 } from "@tanstack/react-router";
 import {
+	ArrowUpDown,
 	ChevronDown,
 	CircleCheck,
 	CirclePause,
+	Copy,
+	CopyPlus,
+	Download,
 	ExternalLink,
 	Eye,
+	Filter,
 	PauseCircle,
 	Pencil,
 	PlayCircle,
 	Plus,
+	RotateCcw,
+	Search,
 	Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -36,13 +43,22 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useTRPC } from "@/integrations/trpc/react";
 import { authClient } from "@/lib/auth-client";
-import { buildQrPublicPreviewPath, buildQrShortPath } from "@/lib/qr-links";
+import { copyText, downloadCsv } from "@/lib/client-export";
+import {
+	buildQrPublicPreviewPath,
+	buildQrShortPath,
+	toAbsoluteUrl,
+} from "@/lib/qr-links";
 
 export const Route = createFileRoute("/app/qr-codes")({
 	component: QrCodesPage,
 });
+
+type StatusFilter = "all" | "active" | "paused";
+type SortOption = "newest" | "name" | "views";
 
 function QrCodesPage() {
 	const pathname = useRouterState({
@@ -54,6 +70,10 @@ function QrCodesPage() {
 	const queryClient = useQueryClient();
 	const [previewCodeId, setPreviewCodeId] = useState<number | null>(null);
 	const [deleteCodeId, setDeleteCodeId] = useState<number | null>(null);
+	const [searchValue, setSearchValue] = useState("");
+	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+	const [tagFilter, setTagFilter] = useState("all");
+	const [sortOption, setSortOption] = useState<SortOption>("newest");
 	const { data: session } = authClient.useSession();
 	const { data: organizationsData } = authClient.useListOrganizations();
 	const activeOrganizationSlug = useMemo(() => {
@@ -96,15 +116,51 @@ function QrCodesPage() {
 			},
 		}),
 	);
+	const duplicateCode = useMutation(
+		trpc.qrCodes.create.mutationOptions({
+			onSuccess: async () => {
+				await queryClient.invalidateQueries();
+				toast.success("QR code duplicated");
+			},
+			onError: (error) => {
+				toast.error(error.message || "Failed to duplicate QR code.");
+			},
+		}),
+	);
 
-	const sortedCodes = useMemo(() => qrCodes ?? [], [qrCodes]);
+	const allCodes = useMemo(() => qrCodes ?? [], [qrCodes]);
+	const allTags = useMemo(
+		() =>
+			Array.from(
+				new Set(allCodes.flatMap((code) => code.tags).filter(Boolean)),
+			).sort((a, b) => a.localeCompare(b)),
+		[allCodes],
+	);
+	const visibleCodes = useMemo(() => {
+		const normalizedQuery = searchValue.trim().toLowerCase();
+		return allCodes
+			.filter((code) => {
+				if (statusFilter === "active" && !code.isActive) return false;
+				if (statusFilter === "paused" && code.isActive) return false;
+				if (tagFilter !== "all" && !code.tags.includes(tagFilter)) return false;
+				if (!normalizedQuery) return true;
+				return [code.name, code.slug, code.destinationUrl, ...code.tags].some(
+					(value) => value.toLowerCase().includes(normalizedQuery),
+				);
+			})
+			.sort((left, right) => {
+				if (sortOption === "name") return left.name.localeCompare(right.name);
+				if (sortOption === "views") return right.scanCount - left.scanCount;
+				return right.createdAt.getTime() - left.createdAt.getTime();
+			});
+	}, [allCodes, searchValue, sortOption, statusFilter, tagFilter]);
 	const previewCode = useMemo(
-		() => sortedCodes.find((code) => code.id === previewCodeId) ?? null,
-		[previewCodeId, sortedCodes],
+		() => allCodes.find((code) => code.id === previewCodeId) ?? null,
+		[allCodes, previewCodeId],
 	);
 	const deleteCandidate = useMemo(
-		() => sortedCodes.find((code) => code.id === deleteCodeId) ?? null,
-		[deleteCodeId, sortedCodes],
+		() => allCodes.find((code) => code.id === deleteCodeId) ?? null,
+		[allCodes, deleteCodeId],
 	);
 	const previewCodePath = useMemo(() => {
 		if (!previewCode) return "";
@@ -117,6 +173,73 @@ function QrCodesPage() {
 		if (!previewCode?.isPublic) return "";
 		return buildQrPublicPreviewPath(activeOrganizationSlug, previewCode.slug);
 	}, [activeOrganizationSlug, previewCode]);
+	const hasActiveFilters =
+		Boolean(searchValue.trim()) ||
+		statusFilter !== "all" ||
+		tagFilter !== "all";
+
+	const copyShortLink = async (slug: string) => {
+		const path = buildQrShortPath(activeOrganizationSlug, slug);
+		if (!path) return;
+		try {
+			await copyText(toAbsoluteUrl(path));
+			toast.success("Short link copied");
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Unable to copy short link.",
+			);
+		}
+	};
+
+	const handleDuplicate = async (code: (typeof allCodes)[number]) => {
+		await duplicateCode.mutateAsync({
+			name: `${code.name} copy`,
+			destinationUrl: code.destinationUrl,
+			destinations: code.destinations.map((destination) => ({
+				id: destination.id,
+				label: destination.label ?? undefined,
+				url: destination.url,
+				weight: destination.weight,
+			})),
+			slug: `${code.slug}-copy`,
+			tags: code.tags,
+			isPublic: code.isPublic,
+			isActive: code.isActive,
+		});
+	};
+
+	const exportInventory = () => {
+		downloadCsv(`qr-inventory-${new Date().toISOString().slice(0, 10)}`, [
+			[
+				"Name",
+				"Short link",
+				"Primary destination",
+				"Destinations",
+				"Views",
+				"Status",
+				"Public page",
+				"Tags",
+				"Created",
+			],
+			...visibleCodes.map((code) => [
+				code.name,
+				toAbsoluteUrl(
+					buildQrShortPath(activeOrganizationSlug, code.slug) ||
+						`/${code.slug}`,
+				),
+				code.destinationUrl,
+				code.destinations.length,
+				code.scanCount,
+				code.isActive ? "Active" : "Paused",
+				code.isPublic ? "Enabled" : "Disabled",
+				code.tags.join("; "),
+				code.createdAt.toISOString(),
+			]),
+		]);
+		toast.success(
+			`Exported ${visibleCodes.length} ${visibleCodes.length === 1 ? "code" : "codes"}`,
+		);
+	};
 
 	if (!isBaseListRoute) {
 		return <Outlet />;
@@ -142,11 +265,111 @@ function QrCodesPage() {
 				</Link>
 			</div>
 
+			<div className="mb-4 rounded-2xl border border-ds-border bg-ds-surface p-3 sm:p-4">
+				<div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_180px_180px_180px_auto]">
+					<div className="relative">
+						<Search
+							aria-hidden="true"
+							className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-text-tertiary"
+						/>
+						<input
+							aria-label="Search QR codes"
+							value={searchValue}
+							onChange={(event) => setSearchValue(event.target.value)}
+							placeholder="Search name, link, destination, or tag"
+							className="h-10 w-full rounded-xl border border-ds-border bg-ds-input-bg py-2 pl-9 pr-3 text-sm text-ds-fg outline-none transition-colors placeholder:text-ds-text-tertiary focus:border-ds-accent"
+						/>
+					</div>
+					<div className="relative">
+						<Filter
+							aria-hidden="true"
+							className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-ds-text-tertiary"
+						/>
+						<NativeSelect
+							aria-label="Filter QR codes by status"
+							value={statusFilter}
+							onChange={(event) =>
+								setStatusFilter(event.target.value as StatusFilter)
+							}
+							className="h-10 border border-ds-border bg-ds-input-bg pl-9 text-sm text-ds-fg"
+						>
+							<option value="all">All statuses</option>
+							<option value="active">Active</option>
+							<option value="paused">Paused</option>
+						</NativeSelect>
+					</div>
+					<div className="relative">
+						<Filter
+							aria-hidden="true"
+							className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-ds-text-tertiary"
+						/>
+						<NativeSelect
+							aria-label="Filter QR codes by tag"
+							value={tagFilter}
+							onChange={(event) => setTagFilter(event.target.value)}
+							className="h-10 border border-ds-border bg-ds-input-bg pl-9 text-sm text-ds-fg"
+						>
+							<option value="all">All tags</option>
+							{allTags.map((tag) => (
+								<option key={tag} value={tag}>
+									{tag}
+								</option>
+							))}
+						</NativeSelect>
+					</div>
+					<div className="relative">
+						<ArrowUpDown
+							aria-hidden="true"
+							className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-ds-text-tertiary"
+						/>
+						<NativeSelect
+							aria-label="Sort QR codes"
+							value={sortOption}
+							onChange={(event) =>
+								setSortOption(event.target.value as SortOption)
+							}
+							className="h-10 border border-ds-border bg-ds-input-bg pl-9 text-sm text-ds-fg"
+						>
+							<option value="newest">Newest first</option>
+							<option value="name">Name A–Z</option>
+							<option value="views">Most viewed</option>
+						</NativeSelect>
+					</div>
+					<button
+						type="button"
+						onClick={() => {
+							setSearchValue("");
+							setStatusFilter("all");
+							setTagFilter("all");
+						}}
+						disabled={!hasActiveFilters}
+						className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
+					>
+						<RotateCcw aria-hidden="true" className="h-4 w-4" />
+						Reset
+					</button>
+				</div>
+			</div>
+
 			<div className="overflow-hidden rounded-2xl border border-ds-border bg-ds-surface">
-				<div className="border-b border-ds-border px-4 py-3 sm:px-5">
-					<h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
-						Managed codes
-					</h2>
+				<div className="flex flex-wrap items-center justify-between gap-3 border-b border-ds-border px-4 py-3 sm:px-5">
+					<div>
+						<h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+							Managed codes
+						</h2>
+						<p className="mt-0.5 text-xs text-ds-text-tertiary">
+							Showing {visibleCodes.length} of {allCodes.length}
+						</p>
+					</div>
+					<button
+						type="button"
+						onClick={exportInventory}
+						disabled={visibleCodes.length === 0}
+						className="inline-flex h-9 items-center gap-2 rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:opacity-50"
+					>
+						<Download aria-hidden="true" className="h-4 w-4" />
+						Export CSV
+					</button>
 				</div>
 				{isError ? (
 					<div role="alert" className="space-y-3 px-4 py-6 sm:px-5">
@@ -173,7 +396,7 @@ function QrCodesPage() {
 							/>
 						))}
 					</div>
-				) : sortedCodes.length === 0 ? (
+				) : allCodes.length === 0 ? (
 					<div className="space-y-3 px-4 py-5 text-sm text-ds-text-secondary sm:px-5">
 						<p>No QR codes yet.</p>
 						<Link
@@ -184,11 +407,32 @@ function QrCodesPage() {
 							Create your first code
 						</Link>
 					</div>
+				) : visibleCodes.length === 0 ? (
+					<div className="px-4 py-8 text-center sm:px-5">
+						<p className="font-semibold text-ds-fg">No matching QR codes</p>
+						<p className="mt-1 text-sm text-ds-text-secondary">
+							Try another search or clear the active filters.
+						</p>
+						<button
+							type="button"
+							onClick={() => {
+								setSearchValue("");
+								setStatusFilter("all");
+								setTagFilter("all");
+							}}
+							className="mt-4 inline-flex h-9 items-center gap-2 rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary hover:border-ds-accent hover:text-ds-accent"
+						>
+							<RotateCcw aria-hidden="true" className="h-4 w-4" />
+							Clear filters
+						</button>
+					</div>
 				) : (
 					<div>
-						{sortedCodes.map((code) => (
+						{visibleCodes.map((code) => (
 							<div
 								key={code.id}
+								data-testid="qr-code-row"
+								data-code-name={code.name}
 								className="border-b border-ds-border px-4 py-4 last:border-b-0 sm:px-5"
 							>
 								<div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -267,6 +511,14 @@ function QrCodesPage() {
 												)}
 												{code.isActive ? "Active" : "Paused"}
 											</span>
+											{code.tags.map((tag) => (
+												<span
+													key={tag}
+													className="rounded-full border border-ds-accent/25 bg-ds-accent/8 px-2.5 py-1 text-ds-accent"
+												>
+													#{tag}
+												</span>
+											))}
 										</div>
 									</div>
 									<div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
@@ -317,6 +569,21 @@ function QrCodesPage() {
 														<ExternalLink className="h-4 w-4" />
 														Open link
 													</a>
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													onSelect={() => void copyShortLink(code.slug)}
+													className="cursor-pointer"
+												>
+													<Copy className="h-4 w-4" />
+													Copy short link
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													disabled={duplicateCode.isPending}
+													onSelect={() => void handleDuplicate(code)}
+													className="cursor-pointer"
+												>
+													<CopyPlus className="h-4 w-4" />
+													Duplicate
 												</DropdownMenuItem>
 												{code.isPublic ? (
 													<DropdownMenuItem asChild className="cursor-pointer">

@@ -1,7 +1,7 @@
 import { Download, QrCode } from "lucide-react";
+import type { Options as QrStyleOptions } from "qr-code-styling/lib/types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { Options as QrStyleOptions } from "qr-code-styling/lib/types";
 import {
 	Dialog,
 	DialogContent,
@@ -9,8 +9,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { slugifyQrName, toAbsoluteUrl } from "@/lib/qr-links";
 import { downloadQrAsset } from "@/lib/qr-export";
+import { slugifyQrName, toAbsoluteUrl } from "@/lib/qr-links";
 
 type QrDownloadExtension = "png" | "svg" | "jpeg" | "webp";
 

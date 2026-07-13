@@ -80,12 +80,22 @@
     "drizzle-kit": "^0.31.10",
     "dotenv": "^17.4.2",
     "jsdom": "^29.1.1",
-    "tsx": "^4.23.0",
+    "tsx": "^4.23.1",
     "typescript": "7.0.2",
     "vite": "8.1.4",
     "vitest": "4.1.10"
   },
-  "overrides": {
-    "esbuild": "^0.27.3"
-  }
+	"overrides": {
+		"@babel/core": "7.29.7",
+		"@opentelemetry/core": "2.9.0",
+		"@protobufjs/utf8": "1.1.2",
+		"defu": "6.1.7",
+		"dompurify": "3.4.12",
+		"esbuild": "0.28.1",
+		"launch-editor": "2.14.1",
+		"picomatch": "4.0.5",
+		"protobufjs": "7.6.5",
+		"shell-quote": "1.10.0",
+		"ws": "8.21.0"
+	}
 }

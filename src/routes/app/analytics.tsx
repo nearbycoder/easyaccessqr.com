@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Activity, QrCode, ScanLine } from "lucide-react";
-import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
+import { Activity, Download, QrCode, ScanLine } from "lucide-react";
+import type { ReactNode, PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useId, useState } from "react";
+import { toast } from "sonner";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useTRPC } from "@/integrations/trpc/react";
+import { downloadCsv } from "@/lib/client-export";
 
 export const Route = createFileRoute("/app/analytics")({
 	component: AnalyticsPage,
@@ -53,10 +55,50 @@ function AnalyticsPage() {
 	);
 
 	const analytics = analyticsQuery.data;
+	const selectedCodeName =
+		selectedCodeId === "all"
+			? "All codes"
+			: ((qrCodes ?? []).find((code) => String(code.id) === selectedCodeId)
+					?.name ?? "Selected code");
+
+	const exportAnalytics = () => {
+		if (!analytics) return;
+		downloadCsv(
+			`qr-analytics-${rangeDays}d-${new Date().toISOString().slice(0, 10)}`,
+			[
+				["Daily trend", selectedCodeName, `${rangeDays} days`],
+				["Date", "Views", "Unique QR codes"],
+				...analytics.dailyScans.map((row) => [
+					row.date,
+					row.scans,
+					row.uniqueQrCodes,
+				]),
+				[],
+				["Top codes"],
+				[
+					"Name",
+					"Slug",
+					"Views in range",
+					"Total views",
+					"Destinations",
+					"Status",
+				],
+				...analytics.topCodes.map((code) => [
+					code.name,
+					code.slug,
+					code.scansInRange,
+					code.scanCount,
+					code.destinationCount,
+					code.isActive ? "Active" : "Paused",
+				]),
+			],
+		);
+		toast.success("Analytics report exported");
+	};
 
 	return (
 		<div className="mx-auto w-full max-w-[1320px]">
-			<div className="mb-6 sm:mb-8">
+			<div className="mb-6 flex flex-wrap items-start justify-between gap-3 sm:mb-8">
 				<div>
 					<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
 						Analytics
@@ -65,6 +107,15 @@ function AnalyticsPage() {
 						View trends, top-performing codes, and usage activity
 					</p>
 				</div>
+				<button
+					type="button"
+					onClick={exportAnalytics}
+					disabled={!analytics || analyticsQuery.isLoading}
+					className="inline-flex h-10 items-center gap-2 rounded-xl border border-ds-border bg-ds-surface px-4 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:opacity-50"
+				>
+					<Download aria-hidden="true" className="h-4 w-4" />
+					Export report
+				</button>
 			</div>
 
 			<div className="mb-5 rounded-2xl border border-ds-border bg-ds-surface p-4 sm:p-5">

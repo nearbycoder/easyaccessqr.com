@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { inferRouterOutputs } from "@trpc/server";
 import {
+	Download,
 	Filter,
 	Mail,
 	Save,
@@ -27,6 +28,7 @@ import { UserNameLink } from "@/components/user-name-link";
 import { useTRPC } from "@/integrations/trpc/react";
 import type { TRPCRouter } from "@/integrations/trpc/router";
 import { authClient } from "@/lib/auth-client";
+import { downloadCsv } from "@/lib/client-export";
 
 export const Route = createFileRoute("/app/settings/members")({
 	component: MembersPage,
@@ -220,6 +222,21 @@ function MembersPage() {
 		setBusyMemberAction(null);
 	};
 
+	const exportRoster = () => {
+		downloadCsv(`member-roster-${new Date().toISOString().slice(0, 10)}`, [
+			["Name", "Email", "Role", "Can manage organization"],
+			...filteredMembers.map((member) => [
+				member.name,
+				member.email,
+				member.role,
+				member.canManageOrganization ? "Yes" : "No",
+			]),
+		]);
+		toast.success(
+			`Exported ${filteredMembers.length} ${filteredMembers.length === 1 ? "member" : "members"}`,
+		);
+	};
+
 	return (
 		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-8">
@@ -284,9 +301,20 @@ function MembersPage() {
 			{/* Members List */}
 			<div className="border-2 border-ds-border rounded-2xl bg-ds-surface/60">
 				<div className="border-b-2 border-ds-border p-4">
-					<span className="text-sm font-bold tracking-wide text-ds-muted">
-						Current Members ({filteredMembers.length}/{memberList.length})
-					</span>
+					<div className="flex flex-wrap items-center justify-between gap-3">
+						<span className="text-sm font-bold tracking-wide text-ds-muted">
+							Current Members ({filteredMembers.length}/{memberList.length})
+						</span>
+						<button
+							type="button"
+							onClick={exportRoster}
+							disabled={filteredMembers.length === 0}
+							className="inline-flex h-9 items-center gap-2 rounded-xl border border-ds-border bg-ds-input-bg px-3 text-xs font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:opacity-50"
+						>
+							<Download aria-hidden="true" className="h-3.5 w-3.5" />
+							Export roster
+						</button>
+					</div>
 					<div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-[1fr_220px]">
 						<div className="relative">
 							<Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ds-muted2" />

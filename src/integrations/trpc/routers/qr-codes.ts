@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, count, desc, eq, gte, inArray, lte, lt, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, lt, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { qrCode, qrScanEvent } from "@/db/schema";
@@ -66,6 +66,7 @@ const qrCreateSchema = z
 			.optional(),
 		tags: z.array(z.string().trim().min(1).max(30)).max(12).optional(),
 		isPublic: z.boolean().optional(),
+		isActive: z.boolean().optional(),
 	})
 	.superRefine((value, ctx) => {
 		const hasDestinationUrl = Boolean(value.destinationUrl?.trim());
@@ -284,10 +285,12 @@ export const qrCodesRouter = {
 	create: orgProcedure
 		.input(qrCreateSchema)
 		.mutation(async ({ ctx, input }) => {
-			await assertCanUseAdditionalActiveQrCode({
-				organizationId: ctx.organizationId,
-				userId: ctx.session.user.id,
-			});
+			if (input.isActive !== false) {
+				await assertCanUseAdditionalActiveQrCode({
+					organizationId: ctx.organizationId,
+					userId: ctx.session.user.id,
+				});
+			}
 			const slug = await resolveUniqueSlug(
 				ctx.organizationId,
 				input.slug ?? input.name,
@@ -307,6 +310,7 @@ export const qrCodesRouter = {
 					destinations: destinationPayload.destinations,
 					slug,
 					isPublic: input.isPublic ?? false,
+					isActive: input.isActive ?? true,
 					tags: (input.tags ?? []).map((tag) => tag.trim()).filter(Boolean),
 				})
 				.returning({ id: qrCode.id });

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -37,6 +37,7 @@ function NewQrCodePage() {
 			destinationUrl: payload.destinationUrl,
 			destinations: payload.destinations,
 			isPublic: payload.isPublic,
+			tags: payload.tags,
 			slug: preferredSlug || undefined,
 		});
 		if (created?.slug && preferredSlug && created.slug !== preferredSlug) {

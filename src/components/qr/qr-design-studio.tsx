@@ -7,12 +7,11 @@ import {
 	QrCode,
 	Settings2,
 	ShieldCheck,
+	Tag,
 	Trash2,
 	WandSparkles,
+	X,
 } from "lucide-react";
-import type { FormEvent } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
 import type {
 	CornerDotType,
 	CornerSquareType,
@@ -21,13 +20,16 @@ import type {
 	Options as QrStyleOptions,
 	ShapeType,
 } from "qr-code-styling/lib/types";
+import type { FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { NativeSelect } from "@/components/ui/native-select";
 import {
-	MAX_QR_DESTINATIONS,
 	isHttpDestinationUrl,
+	MAX_QR_DESTINATIONS,
 	normalizeQrDestinations,
 } from "@/lib/qr-destinations";
 import { downloadQrAsset } from "@/lib/qr-export";
-import { NativeSelect } from "@/components/ui/native-select";
 
 export type DesignerState = {
 	size: number;
@@ -50,6 +52,7 @@ export type QrDesignStudioSubmit = {
 	name: string;
 	destinationUrl: string;
 	isPublic: boolean;
+	tags: string[];
 	destinations: Array<{
 		id?: string;
 		label?: string;
@@ -64,6 +67,7 @@ type QrDesignStudioProps = {
 	initialName?: string;
 	initialDestinationUrl?: string;
 	initialIsPublic?: boolean;
+	initialTags?: string[];
 	initialDestinations?: Array<{
 		id?: string;
 		label?: string | null;
@@ -123,6 +127,7 @@ const MIN_PREVIEW_SIZE = 300;
 const MAX_PREVIEW_SIZE = 520;
 const MAX_LOGO_SIZE = 0.3;
 const MIN_CONTRAST_RATIO = 4.5;
+const EMPTY_TAGS: string[] = [];
 
 export const DEFAULT_DESIGNER: DesignerState = {
 	size: 340,
@@ -146,6 +151,7 @@ export function QrDesignStudio({
 	initialName = "",
 	initialDestinationUrl = "",
 	initialIsPublic = false,
+	initialTags = EMPTY_TAGS,
 	initialDestinations,
 	trackingUrl,
 	submitPending = false,
@@ -153,6 +159,8 @@ export function QrDesignStudio({
 }: QrDesignStudioProps) {
 	const [name, setName] = useState(initialName);
 	const [isPublic, setIsPublic] = useState(initialIsPublic);
+	const [tags, setTags] = useState(() => normalizeTags(initialTags));
+	const [tagInput, setTagInput] = useState("");
 	const [destinations, setDestinations] = useState<DestinationDraft[]>(() =>
 		createInitialDestinationDrafts(initialDestinations, initialDestinationUrl),
 	);
@@ -205,6 +213,10 @@ export function QrDesignStudio({
 	}, [initialIsPublic]);
 
 	useEffect(() => {
+		setTags(normalizeTags(initialTags));
+	}, [initialTags]);
+
+	useEffect(() => {
 		setDestinations(
 			createInitialDestinationDrafts(
 				initialDestinations,
@@ -237,6 +249,7 @@ export function QrDesignStudio({
 			name: name.trim(),
 			destinationUrl: primaryDestinationUrl,
 			isPublic,
+			tags,
 			destinations: normalizedDestinations.map((destination) => ({
 				id: destination.id,
 				label: destination.label ?? undefined,
@@ -245,6 +258,13 @@ export function QrDesignStudio({
 			})),
 			designer,
 		});
+	};
+
+	const addTag = () => {
+		const [nextTag] = normalizeTags([tagInput]);
+		if (!nextTag || tags.includes(nextTag) || tags.length >= 12) return;
+		setTags((current) => [...current, nextTag]);
+		setTagInput("");
 	};
 
 	return (
@@ -328,6 +348,68 @@ export function QrDesignStudio({
 							</span>
 						</span>
 					</label>
+				</div>
+
+				<div className="mt-4 rounded-xl border border-ds-border bg-ds-input-bg p-3">
+					<div className="mb-2 flex items-center justify-between gap-3">
+						<div className="flex items-center gap-2 text-sm font-semibold text-ds-fg">
+							<Tag aria-hidden="true" className="h-4 w-4 text-ds-accent" />
+							Campaign tags
+						</div>
+						<span className="text-xs text-ds-text-tertiary">
+							{tags.length}/12
+						</span>
+					</div>
+					<p className="mb-3 text-xs text-ds-text-tertiary">
+						Organize codes for faster filtering and handoff.
+					</p>
+					<div className="flex flex-col gap-2 sm:flex-row">
+						<input
+							aria-label="Add campaign tag"
+							value={tagInput}
+							onChange={(event) => setTagInput(event.target.value.slice(0, 30))}
+							onKeyDown={(event) => {
+								if (event.key !== "Enter" && event.key !== ",") return;
+								event.preventDefault();
+								addTag();
+							}}
+							placeholder="campaign"
+							disabled={tags.length >= 12}
+							className="h-10 min-w-0 flex-1 rounded-lg border border-ds-border bg-ds-surface px-3 text-sm text-ds-fg outline-none transition-colors placeholder:text-ds-text-tertiary focus:border-ds-accent disabled:opacity-60"
+						/>
+						<button
+							type="button"
+							onClick={addTag}
+							disabled={!tagInput.trim() || tags.length >= 12}
+							className="inline-flex h-10 items-center justify-center rounded-lg border border-ds-border bg-ds-surface px-4 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:opacity-50"
+						>
+							Add tag
+						</button>
+					</div>
+					{tags.length > 0 ? (
+						<div className="mt-3 flex flex-wrap gap-2">
+							{tags.map((tag) => (
+								<span
+									key={tag}
+									className="inline-flex items-center gap-1 rounded-full border border-ds-accent/30 bg-ds-accent/10 py-1 pl-2.5 pr-1.5 text-xs font-semibold text-ds-accent"
+								>
+									{tag}
+									<button
+										type="button"
+										aria-label={`Remove tag ${tag}`}
+										onClick={() =>
+											setTags((current) =>
+												current.filter((value) => value !== tag),
+											)
+										}
+										className="inline-flex h-5 w-5 items-center justify-center rounded-full text-ds-accent transition-colors hover:bg-ds-accent/15"
+									>
+										<X aria-hidden="true" className="h-3 w-3" />
+									</button>
+								</span>
+							))}
+						</div>
+					) : null}
 				</div>
 
 				<div className="mt-4 rounded-xl border border-ds-border bg-ds-input-bg p-3">
@@ -919,6 +1001,17 @@ function createInitialDestinationDrafts(
 			weight: 100,
 		},
 	];
+}
+
+function normalizeTags(values: string[]) {
+	return Array.from(
+		new Set(
+			values
+				.map((value) => value.trim().toLowerCase())
+				.filter(Boolean)
+				.map((value) => value.slice(0, 30)),
+		),
+	).slice(0, 12);
 }
 
 function createDestinationId(index: number) {
