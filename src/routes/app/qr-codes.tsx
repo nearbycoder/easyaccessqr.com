@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+	createFileRoute,
 	Link,
 	Outlet,
-	createFileRoute,
 	useRouterState,
 } from "@tanstack/react-router";
 import {
 	ChevronDown,
-	Eye,
+	CircleCheck,
+	CirclePause,
 	ExternalLink,
+	Eye,
 	PauseCircle,
 	Pencil,
 	PlayCircle,
@@ -122,18 +124,18 @@ function QrCodesPage() {
 
 	return (
 		<div className="mx-auto w-full max-w-[1320px]">
-			<div className="mb-8 flex flex-wrap items-start justify-between gap-3">
+			<div className="mb-6 flex flex-wrap items-start justify-between gap-3 sm:mb-8">
 				<div>
 					<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
 						QR codes
 					</h1>
-					<p className="mt-1 text-base text-ds-text-secondary">
+					<p className="mt-1 max-w-2xl text-sm text-ds-text-secondary sm:text-base">
 						Design, create, and manage destination links with scan tracking.
 					</p>
 				</div>
 				<Link
 					to="/app/qr-codes/new"
-					className="inline-flex h-11 items-center gap-2 rounded-xl bg-ds-accent px-5 text-base font-semibold text-ds-accent-fg transition-colors hover:bg-ds-accent-hover"
+					className="inline-flex h-10 items-center gap-2 rounded-xl bg-ds-accent px-4 text-sm font-semibold text-ds-accent-fg transition-colors hover:bg-ds-accent-hover sm:h-11 sm:px-5 sm:text-base"
 				>
 					<Plus className="h-5 w-5" />
 					New QR code
@@ -142,7 +144,7 @@ function QrCodesPage() {
 
 			<div className="overflow-hidden rounded-2xl border border-ds-border bg-ds-surface">
 				<div className="border-b border-ds-border px-4 py-3 sm:px-5">
-					<h2 className="text-2xl font-semibold tracking-tight">
+					<h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
 						Managed codes
 					</h2>
 				</div>
@@ -194,7 +196,7 @@ function QrCodesPage() {
 										{/*
 											Short links are the tracked entrypoint. Destination remains visible as the final target.
 										*/}
-										<div className="text-xl font-semibold tracking-tight sm:text-2xl">
+										<div className="text-lg font-semibold tracking-tight sm:text-xl">
 											{code.name}
 										</div>
 										<div className="mt-1 text-sm text-ds-accent">
@@ -227,7 +229,7 @@ function QrCodesPage() {
 												Public QR page is disabled
 											</div>
 										)}
-										<div className="mt-1 text-base text-ds-text-tertiary">
+										<div className="mt-2 text-sm text-ds-text-tertiary">
 											<span className="font-medium text-ds-text-secondary">
 												Primary destination:
 											</span>{" "}
@@ -235,12 +237,36 @@ function QrCodesPage() {
 												{code.destinationUrl}
 											</span>
 										</div>
-										<div className="mt-1 text-base text-ds-text-secondary">
-											{(code.destinations?.length ?? 0) > 1
-												? `${code.destinations?.length ?? 0} weighted destinations`
-												: "Single destination"}{" "}
-											• {code.scanCount} views •{" "}
-											{code.isActive ? "Active" : "Paused"}
+										<div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
+											<span className="rounded-full border border-ds-border bg-ds-surface2 px-2.5 py-1 text-ds-text-secondary">
+												{(code.destinations?.length ?? 0) > 1
+													? `${code.destinations?.length ?? 0} weighted destinations`
+													: "Single destination"}
+											</span>
+											<span className="rounded-full border border-ds-border bg-ds-surface2 px-2.5 py-1 text-ds-text-secondary">
+												{code.scanCount}{" "}
+												{code.scanCount === 1 ? "view" : "views"}
+											</span>
+											<span
+												className={
+													code.isActive
+														? "inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-emerald-700 dark:text-emerald-300"
+														: "inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-amber-700 dark:text-amber-300"
+												}
+											>
+												{code.isActive ? (
+													<CircleCheck
+														aria-hidden="true"
+														className="h-3.5 w-3.5"
+													/>
+												) : (
+													<CirclePause
+														aria-hidden="true"
+														className="h-3.5 w-3.5"
+													/>
+												)}
+												{code.isActive ? "Active" : "Paused"}
+											</span>
 										</div>
 									</div>
 									<div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">

@@ -42,18 +42,22 @@ export function MarketingHeader({
 	return (
 		<>
 			<header className="sticky top-0 z-40 border-b border-ds-border bg-ds-surface/95 backdrop-blur-sm">
-				<div className="mx-auto flex w-full max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
+				<div className="mx-auto flex min-h-16 w-full max-w-7xl items-center gap-2 px-3 py-2.5 sm:gap-4 sm:px-6 sm:py-3">
 					<button
 						type="button"
 						aria-label="Open navigation menu"
 						onClick={() => setMobileNavOpen(true)}
-						className="inline-flex h-9 w-9 items-center justify-center text-ds-text-tertiary lg:hidden"
+						className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-ds-border bg-ds-input-bg text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent lg:hidden"
 					>
-						<Menu className="h-4 w-4" />
+						<Menu className="h-5 w-5" />
 					</button>
-					<div className="text-[30px] font-extrabold leading-none tracking-tight text-[#de6346]">
+					<Link
+						to="/"
+						aria-label="Easy Access QR home"
+						className="shrink-0 whitespace-nowrap text-xl font-extrabold leading-none tracking-tight text-[#de6346] sm:text-2xl lg:text-[30px]"
+					>
 						Easy Access QR
-					</div>
+					</Link>
 					<nav className="ml-4 hidden items-center gap-6 text-[15px] font-medium text-ds-text-secondary lg:flex">
 						<a href={featuresHref} className="hover:text-ds-fg">
 							Features
@@ -71,7 +75,7 @@ export function MarketingHeader({
 							Privacy
 						</Link>
 					</nav>
-					<div className="ml-auto flex items-center gap-2">
+					<div className="ml-auto flex min-w-0 items-center gap-1.5 sm:gap-2">
 						<div className="hidden lg:block">
 							<ThemeToggle />
 						</div>
@@ -79,21 +83,27 @@ export function MarketingHeader({
 							<Link
 								to="/auth/sign-in"
 								search={{ invitationId: undefined, email: undefined }}
-								className="px-4 py-2 text-sm font-semibold text-ds-accent"
+								className="inline-flex px-2 py-2 text-xs font-semibold text-ds-accent transition-colors hover:text-ds-accent-hover sm:px-3 sm:text-sm lg:px-4"
 							>
 								Sign in
 							</Link>
 						) : null}
 						<Link
 							to={isLoggedIn ? "/app" : "/auth/sign-up"}
+							aria-label={isLoggedIn ? "Open dashboard" : "Create free account"}
 							search={
 								isLoggedIn
 									? undefined
 									: { invitationId: undefined, email: undefined }
 							}
-							className="inline-flex items-center gap-2 border border-ds-accent bg-ds-accent px-4 py-2 text-sm font-semibold text-ds-accent-fg transition-colors hover:bg-ds-accent-hover"
+							className="inline-flex shrink-0 items-center gap-2 border border-ds-accent bg-ds-accent px-3 py-2 text-xs font-semibold text-ds-accent-fg transition-colors hover:bg-ds-accent-hover sm:px-4 sm:text-sm"
 						>
-							{isLoggedIn ? "Open dashboard" : "Create free account"}
+							<span className="sm:hidden">
+								{isLoggedIn ? "Dashboard" : "Get started"}
+							</span>
+							<span className="hidden sm:inline">
+								{isLoggedIn ? "Open dashboard" : "Create free account"}
+							</span>
 						</Link>
 					</div>
 				</div>
@@ -151,7 +161,31 @@ export function MarketingHeader({
 							Privacy
 						</Link>
 					</nav>
-					<div className="border-t border-ds-border p-4">
+					<div className="mt-auto space-y-3 border-t border-ds-border p-4">
+						<div className="grid grid-cols-2 gap-2">
+							{!isLoggedIn ? (
+								<Link
+									to="/auth/sign-in"
+									search={{ invitationId: undefined, email: undefined }}
+									onClick={() => setMobileNavOpen(false)}
+									className="inline-flex items-center justify-center border border-ds-border bg-ds-input-bg px-3 py-2 text-sm font-semibold text-ds-text-secondary"
+								>
+									Sign in
+								</Link>
+							) : null}
+							<Link
+								to={isLoggedIn ? "/app" : "/auth/sign-up"}
+								search={
+									isLoggedIn
+										? undefined
+										: { invitationId: undefined, email: undefined }
+								}
+								onClick={() => setMobileNavOpen(false)}
+								className={`${isLoggedIn ? "col-span-2" : ""} inline-flex items-center justify-center border border-ds-accent bg-ds-accent px-3 py-2 text-sm font-semibold text-ds-accent-fg`}
+							>
+								{isLoggedIn ? "Open dashboard" : "Create account"}
+							</Link>
+						</div>
 						<ThemeToggle />
 					</div>
 				</SheetContent>

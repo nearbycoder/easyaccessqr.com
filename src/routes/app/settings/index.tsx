@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CreditCard, LockKeyhole, UserRound, Users } from "lucide-react";
+import {
+	ArrowUpRight,
+	CreditCard,
+	LockKeyhole,
+	UserRound,
+	Users,
+} from "lucide-react";
 import { useTRPC } from "@/integrations/trpc/react";
 
 export const Route = createFileRoute("/app/settings/")({
@@ -52,43 +58,59 @@ function SettingsIndex() {
 				</div>
 			</div>
 
-			<div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
 				<Link
 					to="/app/settings/profile"
-					className="group h-full min-h-[140px] cursor-pointer rounded-2xl border-2 border-ds-border bg-ds-surface/60 p-6 transition-all hover:border-ds-muted2 hover:bg-ds-surface"
+					className="group relative h-full min-h-32 cursor-pointer rounded-2xl border border-ds-border bg-ds-surface p-5 transition-all hover:-translate-y-0.5 hover:border-ds-accent hover:shadow-sm sm:p-6"
 				>
+					<ArrowUpRight
+						aria-hidden="true"
+						className="absolute right-5 top-5 h-4 w-4 text-ds-text-tertiary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ds-accent"
+					/>
 					<UserRound className="mb-3 h-6 w-6 text-ds-accent" />
 					<div className="text-sm font-extrabold tracking-wide">Profile</div>
 					<div className="mt-1 text-xs text-ds-muted">Public bio</div>
 				</Link>
 				<Link
 					to="/app/settings/members"
-					className="group h-full min-h-[140px] cursor-pointer rounded-2xl border-2 border-ds-border bg-ds-surface/60 p-6 transition-all hover:border-ds-muted2 hover:bg-ds-surface"
+					className="group relative h-full min-h-32 cursor-pointer rounded-2xl border border-ds-border bg-ds-surface p-5 transition-all hover:-translate-y-0.5 hover:border-ds-accent hover:shadow-sm sm:p-6"
 				>
+					<ArrowUpRight
+						aria-hidden="true"
+						className="absolute right-5 top-5 h-4 w-4 text-ds-text-tertiary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ds-accent"
+					/>
 					<Users className="mb-3 h-6 w-6 text-ds-accent" />
 					<div className="text-sm font-extrabold tracking-wide">People</div>
 					<div className="mt-1 text-xs text-ds-muted">Members &amp; access</div>
 				</Link>
 				{canManageOrganization && (
-					<Link to="/app/settings/billing">
-						<div className="h-full min-h-[140px] border-2 border-ds-border rounded-2xl bg-ds-surface/60 p-6 hover:bg-ds-surface hover:border-ds-muted2 transition-all cursor-pointer group">
-							<CreditCard className="w-6 h-6 text-ds-accent mb-3" />
-							<div className="font-extrabold text-sm tracking-wide">
-								Billing
-							</div>
-							<div className="mt-1 block overflow-hidden text-ellipsis whitespace-nowrap text-ds-muted text-xs">
-								Plan &amp; payment
-							</div>
+					<Link
+						to="/app/settings/billing"
+						className="group relative h-full min-h-32 cursor-pointer rounded-2xl border border-ds-border bg-ds-surface p-5 transition-all hover:-translate-y-0.5 hover:border-ds-accent hover:shadow-sm sm:p-6"
+					>
+						<ArrowUpRight
+							aria-hidden="true"
+							className="absolute right-5 top-5 h-4 w-4 text-ds-text-tertiary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ds-accent"
+						/>
+						<CreditCard className="mb-3 h-6 w-6 text-ds-accent" />
+						<div className="text-sm font-extrabold tracking-wide">Billing</div>
+						<div className="mt-1 block overflow-hidden text-ellipsis whitespace-nowrap text-xs text-ds-muted">
+							Plan &amp; payment
 						</div>
 					</Link>
 				)}
-				<Link to="/app/settings/security">
-					<div className="h-full min-h-[140px] border-2 border-ds-border rounded-2xl bg-ds-surface/60 p-6 hover:bg-ds-surface hover:border-ds-muted2 transition-all cursor-pointer group">
-						<LockKeyhole className="w-6 h-6 text-emerald-500 dark:text-emerald-400 mb-3" />
-						<div className="font-extrabold text-sm tracking-wide">Security</div>
-						<div className="mt-1 block overflow-hidden text-ellipsis whitespace-nowrap text-ds-muted text-xs">
-							Password &amp; sessions
-						</div>
+				<Link
+					to="/app/settings/security"
+					className="group relative h-full min-h-32 cursor-pointer rounded-2xl border border-ds-border bg-ds-surface p-5 transition-all hover:-translate-y-0.5 hover:border-ds-accent hover:shadow-sm sm:p-6"
+				>
+					<ArrowUpRight
+						aria-hidden="true"
+						className="absolute right-5 top-5 h-4 w-4 text-ds-text-tertiary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ds-accent"
+					/>
+					<LockKeyhole className="mb-3 h-6 w-6 text-emerald-500 dark:text-emerald-400" />
+					<div className="text-sm font-extrabold tracking-wide">Security</div>
+					<div className="mt-1 block overflow-hidden text-ellipsis whitespace-nowrap text-xs text-ds-muted">
+						Password &amp; sessions
 					</div>
 				</Link>
 			</div>

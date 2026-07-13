@@ -6,6 +6,7 @@ import {
 	Download,
 	QrCode,
 	ScanLine,
+	Sparkles,
 	Users,
 } from "lucide-react";
 import type { Options as QrStyleOptions } from "qr-code-styling/lib/types";
@@ -151,8 +152,19 @@ function LandingPage() {
 				pricingSectionId={PRICING_SECTION_ID}
 			/>
 
-			<section className="px-4 pt-16 pb-14 sm:px-6 sm:pt-20 sm:pb-18">
+			<section className="relative isolate overflow-hidden px-4 pt-14 pb-14 sm:px-6 sm:pt-20 sm:pb-18">
+				<div
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[28rem] bg-[radial-gradient(circle_at_50%_0%,color-mix(in_oklab,var(--ds-accent)_15%,transparent),transparent_64%)]"
+				/>
 				<div className="mx-auto w-full max-w-5xl text-center">
+					<div className="mb-5 inline-flex items-center gap-2 rounded-full border border-ds-border bg-ds-surface/80 px-3 py-1.5 text-xs font-semibold text-ds-text-secondary shadow-sm backdrop-blur-sm sm:text-sm">
+						<Sparkles
+							aria-hidden="true"
+							className="h-3.5 w-3.5 text-ds-accent"
+						/>
+						Dynamic links, live analytics, one clear workspace
+					</div>
 					<h1 className="font-display text-5xl leading-[0.98] text-ds-fg sm:text-7xl">
 						QR campaigns,
 						<br />
@@ -184,12 +196,15 @@ function LandingPage() {
 							Check out our QR builder
 						</button>
 					</div>
+					<p className="mt-4 text-xs font-medium text-ds-text-tertiary sm:text-sm">
+						Free to start · No credit card required · Export anytime
+					</p>
 				</div>
 			</section>
 
 			<section id={PRODUCT_SECTION_ID} className="px-4 pb-12 sm:px-6 sm:pb-16">
 				<div className="mx-auto grid w-full max-w-6xl gap-4 md:grid-cols-[1fr_280px]">
-					<div className="relative border border-ds-border bg-ds-surface p-4 sm:p-6">
+					<div className="relative rounded-3xl border border-ds-border bg-ds-surface p-4 shadow-[0_18px_60px_-36px_color-mix(in_oklab,var(--ds-accent)_55%,transparent)] sm:p-6">
 						<div className="mb-4 flex items-center justify-between border-b border-ds-border pb-3">
 							<div className="text-xl font-extrabold text-[#de6346]">
 								Easy Access QR
@@ -232,14 +247,14 @@ function LandingPage() {
 						</div>
 					</div>
 					<div className="space-y-3">
-						<div className="border border-ds-border bg-ds-surface2 p-4">
+						<div className="rounded-2xl border border-ds-border bg-ds-surface2 p-4">
 							<p className="text-sm font-bold">QR design studio</p>
 							<p className="mt-2 text-sm text-ds-text-secondary">
 								Customize dot style, colors, quiet zone, and logos, then
 								download production-ready PNG, SVG, or JPEG files.
 							</p>
 						</div>
-						<div className="border border-ds-border bg-ds-surface2 p-4">
+						<div className="rounded-2xl border border-ds-border bg-ds-surface2 p-4">
 							<p className="text-sm font-bold">Dynamic routing analytics</p>
 							<p className="mt-2 text-sm text-ds-text-secondary">
 								Split traffic across multiple destinations with weighted rules
@@ -262,7 +277,7 @@ function LandingPage() {
 						{features.map((feature) => (
 							<div
 								key={feature.title}
-								className="border border-ds-border bg-ds-surface2 p-5"
+								className="rounded-2xl border border-ds-border bg-ds-surface2 p-5 transition-all hover:-translate-y-0.5 hover:border-ds-accent hover:bg-ds-surface"
 							>
 								<feature.icon className="h-5 w-5 text-ds-accent" />
 								<h3 className="mt-3 text-xl font-bold">{feature.title}</h3>
@@ -405,7 +420,9 @@ type QRCodeStylingInstance = {
 		name?: string;
 		extension?: "png" | "svg" | "jpeg" | "webp";
 	}) => Promise<void>;
-	getRawData?: (extension?: "png" | "svg" | "jpeg" | "webp") => Promise<unknown>;
+	getRawData?: (
+		extension?: "png" | "svg" | "jpeg" | "webp",
+	) => Promise<unknown>;
 };
 
 type QRCodeStylingConstructor = new (
