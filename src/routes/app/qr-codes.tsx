@@ -7,12 +7,12 @@ import {
 } from "@tanstack/react-router";
 import {
 	ArrowUpDown,
-	ChevronDown,
 	CircleCheck,
 	CirclePause,
 	Copy,
 	CopyPlus,
 	Download,
+	Ellipsis,
 	ExternalLink,
 	Eye,
 	Filter,
@@ -307,27 +307,25 @@ function QrCodesPage() {
 
 	return (
 		<div className="mx-auto w-full max-w-[1320px]">
-			<div className="mb-6 flex flex-wrap items-start justify-between gap-3 sm:mb-8">
+			<div className="mb-6 flex flex-wrap items-start justify-between gap-3">
 				<div>
-					<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
-						QR codes
-					</h1>
-					<p className="mt-1 max-w-2xl text-sm text-ds-text-secondary sm:text-base">
+					<h1 className="text-2xl font-semibold tracking-tight">QR codes</h1>
+					<p className="mt-1 max-w-2xl text-sm text-ds-text-secondary">
 						Design, create, and manage destination links with scan tracking.
 					</p>
 				</div>
 				<Link
 					to="/app/qr-codes/new"
-					className="inline-flex h-10 items-center gap-2 rounded-xl bg-ds-accent px-4 text-sm font-semibold text-ds-accent-fg transition-colors hover:bg-ds-accent-hover sm:h-11 sm:px-5 sm:text-base"
+					className="inline-flex h-10 items-center gap-2 rounded-xl bg-ds-accent px-4 text-sm font-semibold text-ds-accent-fg transition-colors hover:bg-ds-accent-hover"
 				>
 					<Plus className="h-5 w-5" />
 					New QR code
 				</Link>
 			</div>
 
-			<div className="mb-4 rounded-2xl border border-ds-border bg-ds-surface p-3 sm:p-4">
-				<div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_180px_180px_180px_auto]">
-					<div className="relative">
+			<div className="mb-4 rounded-xl border border-ds-border bg-ds-surface p-3 sm:p-4">
+				<div className="grid grid-cols-2 gap-2 xl:grid-cols-[minmax(0,1fr)_160px_145px_155px_auto]">
+					<div className="relative col-span-2 xl:col-span-1">
 						<Search
 							aria-hidden="true"
 							className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ds-text-tertiary"
@@ -341,7 +339,7 @@ function QrCodesPage() {
 								setSelectedIds([]);
 							}}
 							placeholder="Search name, link, destination, or tag"
-							className="h-10 w-full rounded-xl border border-ds-border bg-ds-input-bg py-2 pl-9 pr-3 text-sm text-ds-fg outline-none transition-colors placeholder:text-ds-text-tertiary focus:border-ds-accent"
+							className="h-10 w-full rounded-lg border border-ds-border bg-ds-input-bg py-2 pl-9 pr-3 text-sm text-ds-fg transition-colors placeholder:text-ds-text-tertiary focus:border-ds-accent"
 						/>
 					</div>
 					<div className="relative">
@@ -414,17 +412,14 @@ function QrCodesPage() {
 							setTagFilter("all");
 						}}
 						disabled={!hasActiveFilters}
-						className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
+						className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<RotateCcw aria-hidden="true" className="h-4 w-4" />
 						Reset
 					</button>
 				</div>
-			</div>
-
-			<div className="mb-4 rounded-2xl border border-ds-border bg-ds-surface p-4">
-				<details>
-					<summary className="cursor-pointer text-sm font-semibold">
+				<details className="mt-3 border-t border-ds-border pt-3">
+					<summary className="cursor-pointer text-xs font-medium text-ds-text-secondary">
 						More filters
 					</summary>
 					<QrLibraryFilters
@@ -437,7 +432,7 @@ function QrCodesPage() {
 					/>
 				</details>
 			</div>
-			<div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-ds-border bg-ds-surface p-4">
+			<div className="mb-3 flex flex-wrap items-center gap-3 px-1 py-1">
 				<label className="flex items-center gap-2 text-sm">
 					<input
 						type="checkbox"
@@ -464,69 +459,77 @@ function QrCodesPage() {
 					/>
 					Select page
 				</label>
-				<span aria-live="polite" className="text-sm">
+				<span
+					aria-live="polite"
+					className="text-xs tabular-nums text-ds-text-tertiary"
+				>
 					{selectedCodes.length} selected (max 100)
 				</span>
-				<button
-					type="button"
-					className="toolkit-button"
-					disabled={!selectedIds.length || bulkUpdate.isPending}
-					onClick={() => setSelectedIds([])}
-				>
-					Clear selection
-				</button>
-				<button
-					type="button"
-					className="toolkit-button"
-					disabled={!selectedCodes.length || !activeOrganizationSlug}
-					onClick={() => void copySelectedLinks()}
-				>
-					Copy selected links
-				</button>
-				<select
-					className="toolkit-input w-auto"
-					aria-label="Bulk action"
-					value={bulkAction}
-					disabled={bulkUpdate.isPending}
-					onChange={(event) =>
-						setBulkAction(event.target.value as typeof bulkAction)
-					}
-				>
-					<option value="pause">Pause selected</option>
-					<option value="resume">Resume selected</option>
-					<option value="public">Enable public pages</option>
-					<option value="private">Disable public pages</option>
-					<option value="add-tag">Add tag</option>
-					<option value="remove-tag">Remove tag</option>
-				</select>
-				{["add-tag", "remove-tag"].includes(bulkAction) ? (
-					<input
-						aria-label="Bulk tag"
-						placeholder="Tag"
-						maxLength={30}
-						className="toolkit-input max-w-48"
-						value={bulkTag}
-						onChange={(event) => setBulkTag(event.target.value)}
-					/>
+				{selectedIds.length > 0 ? (
+					<div className="flex w-full flex-wrap items-center gap-2 rounded-lg border border-ds-accent/25 bg-ds-surface p-3">
+						<button
+							type="button"
+							className="toolkit-button"
+							disabled={!selectedIds.length || bulkUpdate.isPending}
+							onClick={() => setSelectedIds([])}
+						>
+							Clear selection
+						</button>
+						<button
+							type="button"
+							className="toolkit-button"
+							disabled={!selectedCodes.length || !activeOrganizationSlug}
+							onClick={() => void copySelectedLinks()}
+						>
+							Copy selected links
+						</button>
+						<select
+							className="toolkit-input w-full sm:w-auto"
+							aria-label="Bulk action"
+							value={bulkAction}
+							disabled={bulkUpdate.isPending}
+							onChange={(event) =>
+								setBulkAction(event.target.value as typeof bulkAction)
+							}
+						>
+							<option value="pause">Pause selected</option>
+							<option value="resume">Resume selected</option>
+							<option value="public">Enable public pages</option>
+							<option value="private">Disable public pages</option>
+							<option value="add-tag">Add tag</option>
+							<option value="remove-tag">Remove tag</option>
+						</select>
+						{["add-tag", "remove-tag"].includes(bulkAction) ? (
+							<input
+								aria-label="Bulk tag"
+								placeholder="Tag"
+								maxLength={30}
+								className="toolkit-input max-w-48"
+								value={bulkTag}
+								onChange={(event) => setBulkTag(event.target.value)}
+							/>
+						) : null}
+						<button
+							type="button"
+							className="toolkit-button"
+							disabled={
+								!selectedCodes.length ||
+								bulkUpdate.isPending ||
+								(["add-tag", "remove-tag"].includes(bulkAction) &&
+									!bulkTag.trim())
+							}
+							onClick={() => setConfirmBulk(true)}
+						>
+							Apply to selected
+						</button>
+					</div>
 				) : null}
-				<button
-					type="button"
-					className="toolkit-button"
-					disabled={
-						!selectedCodes.length ||
-						bulkUpdate.isPending ||
-						(["add-tag", "remove-tag"].includes(bulkAction) && !bulkTag.trim())
-					}
-					onClick={() => setConfirmBulk(true)}
-				>
-					Apply to selected
-				</button>
 			</div>
 
-			<div className="overflow-hidden rounded-2xl border border-ds-border bg-ds-surface">
+			<div className="overflow-hidden rounded-xl border border-ds-border bg-ds-surface">
 				<div className="flex flex-wrap items-center justify-between gap-3 border-b border-ds-border px-4 py-3 sm:px-5">
 					<div>
-						<h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+						<h2 className="text-sm font-semibold tracking-tight">
 							Managed codes
 						</h2>
 						<p className="mt-0.5 text-xs text-ds-text-tertiary">
@@ -537,7 +540,7 @@ function QrCodesPage() {
 						type="button"
 						onClick={exportInventory}
 						disabled={visibleCodes.length === 0}
-						className="inline-flex h-9 items-center gap-2 rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:opacity-50"
+						className="inline-flex h-9 items-center gap-2 rounded-lg border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:opacity-50"
 					>
 						<Download aria-hidden="true" className="h-4 w-4" />
 						Export CSV
@@ -554,7 +557,7 @@ function QrCodesPage() {
 						<button
 							type="button"
 							onClick={() => void refetch()}
-							className="inline-flex h-9 items-center rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent"
+							className="inline-flex h-9 items-center rounded-lg border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent"
 						>
 							Try again
 						</button>
@@ -573,7 +576,7 @@ function QrCodesPage() {
 						<p>No QR codes yet.</p>
 						<Link
 							to="/app/qr-codes/new"
-							className="inline-flex h-9 items-center gap-1 rounded-xl border border-ds-border bg-ds-input-bg px-3 font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent"
+							className="inline-flex h-9 items-center gap-1 rounded-lg border border-ds-border bg-ds-input-bg px-3 font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent"
 						>
 							<Plus className="h-4 w-4" />
 							Create your first code
@@ -593,7 +596,7 @@ function QrCodesPage() {
 								setStatusFilter("all");
 								setTagFilter("all");
 							}}
-							className="mt-4 inline-flex h-9 items-center gap-2 rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary hover:border-ds-accent hover:text-ds-accent"
+							className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg border border-ds-border bg-ds-input-bg px-3 text-sm font-semibold text-ds-text-secondary hover:border-ds-accent hover:text-ds-accent"
 						>
 							<RotateCcw aria-hidden="true" className="h-4 w-4" />
 							Clear filters
@@ -606,15 +609,15 @@ function QrCodesPage() {
 								key={code.id}
 								data-testid="qr-code-row"
 								data-code-name={code.name}
-								className="border-b border-ds-border px-4 py-4 last:border-b-0 sm:px-5"
+								className={`border-b border-ds-border px-4 py-4 transition-colors last:border-b-0 sm:px-5 ${selectedIds.includes(code.id) ? "bg-ds-accent/5" : "hover:bg-ds-surface2/40"}`}
 							>
-								<div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+								<div className="flex items-start justify-between gap-3">
 									<div className="min-w-0 flex-1">
 										{/*
 											Short links are the tracked entrypoint. Destination remains visible as the final target.
 										*/}
-										<div className="text-lg font-semibold tracking-tight sm:text-xl">
-											<label className="inline-flex items-center gap-3">
+										<div className="text-sm font-semibold tracking-tight">
+											<label className="flex min-w-0 items-center gap-3">
 												<input
 													type="checkbox"
 													aria-label={`Select ${code.name}`}
@@ -632,62 +635,42 @@ function QrCodesPage() {
 														)
 													}
 												/>
-												{code.name}
+												<span className="truncate" title={code.name}>
+													{code.name}
+												</span>
 											</label>
 										</div>
-										<div className="mt-1 text-sm text-ds-accent">
-											<span className="font-semibold">Short link:</span>{" "}
+										<div className="mt-1.5 truncate pl-7 text-xs text-ds-accent">
+											<span className="sr-only">Short link:</span>{" "}
 											<span className="[overflow-wrap:anywhere]">
 												{buildQrShortPath(activeOrganizationSlug, code.slug) ||
 													`/${code.slug}`}
 											</span>
 										</div>
-										{code.isPublic ? (
-											<div className="mt-1 text-sm text-ds-text-secondary">
-												<span className="font-semibold">Public QR page:</span>{" "}
-												<a
-													href={buildQrPublicPreviewPath(
-														activeOrganizationSlug,
-														code.slug,
-													)}
-													target="_blank"
-													rel="noreferrer"
-													className="font-semibold text-ds-accent [overflow-wrap:anywhere] hover:underline"
-												>
-													{buildQrPublicPreviewPath(
-														activeOrganizationSlug,
-														code.slug,
-													)}
-												</a>
-											</div>
-										) : (
-											<div className="mt-1 text-sm text-ds-text-tertiary">
-												Public QR page is disabled
-											</div>
-										)}
-										<div className="mt-2 text-sm text-ds-text-tertiary">
-											<span className="font-medium text-ds-text-secondary">
-												Primary destination:
-											</span>{" "}
+										<div
+											className="mt-1 truncate pl-7 text-xs text-ds-text-tertiary"
+											title={code.destinationUrl}
+										>
+											<span className="sr-only">Primary destination:</span>{" "}
 											<span className="[overflow-wrap:anywhere]">
 												{code.destinationUrl}
 											</span>
 										</div>
-										<div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
-											<span className="rounded-full border border-ds-border bg-ds-surface2 px-2.5 py-1 text-ds-text-secondary">
+										<div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 pl-7 text-xs font-medium">
+											<span className="tabular-nums text-ds-text-tertiary">
 												{(code.destinations?.length ?? 0) > 1
 													? `${code.destinations?.length ?? 0} weighted destinations`
 													: "Single destination"}
 											</span>
-											<span className="rounded-full border border-ds-border bg-ds-surface2 px-2.5 py-1 text-ds-text-secondary">
+											<span className="tabular-nums text-ds-text-tertiary">
 												{code.scanCount}{" "}
 												{code.scanCount === 1 ? "view" : "views"}
 											</span>
 											<span
 												className={
 													code.isActive
-														? "inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-emerald-700 dark:text-emerald-300"
-														: "inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-amber-700 dark:text-amber-300"
+														? "inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-300"
+														: "inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-1.5 py-0.5 text-amber-700 dark:text-amber-300"
 												}
 											>
 												{code.isActive ? (
@@ -703,35 +686,56 @@ function QrCodesPage() {
 												)}
 												{code.isActive ? "Active" : "Paused"}
 											</span>
+											{code.isPublic ? (
+												<a
+													href={buildQrPublicPreviewPath(
+														activeOrganizationSlug,
+														code.slug,
+													)}
+													target="_blank"
+													rel="noreferrer"
+													className="text-ds-accent hover:underline"
+												>
+													Public QR page{" "}
+													<ExternalLink
+														aria-hidden="true"
+														className="inline h-3 w-3"
+													/>
+												</a>
+											) : (
+												<span className="text-ds-text-tertiary">
+													Private QR page
+												</span>
+											)}
 											{code.tags.map((tag) => (
 												<span
 													key={tag}
-													className="rounded-full border border-ds-accent/25 bg-ds-accent/8 px-2.5 py-1 text-ds-accent"
+													className="rounded-md bg-ds-surface2 px-1.5 py-0.5 text-ds-text-secondary"
 												>
 													#{tag}
 												</span>
 											))}
 										</div>
 									</div>
-									<div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
+									<div className="flex shrink-0 items-center gap-1">
 										<button
 											type="button"
 											aria-label={`View QR for ${code.name}`}
 											onClick={() => setPreviewCodeId(code.id)}
-											className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-ds-border bg-ds-input-bg px-2.5 text-xs font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent sm:px-3 sm:text-sm"
+											className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-ds-text-tertiary transition-colors hover:bg-ds-surface2 hover:text-ds-fg sm:w-auto sm:gap-1.5 sm:px-2.5 sm:text-xs"
 										>
 											<Eye className="h-4 w-4" />
-											View QR
+											<span className="hidden sm:inline">View QR</span>
 										</button>
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<button
 													type="button"
 													aria-label={`Actions for ${code.name}`}
-													className="inline-flex h-10 items-center justify-center gap-1 rounded-xl border border-ds-border bg-ds-input-bg px-2.5 text-xs font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent sm:px-3 sm:text-sm"
+													className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-ds-text-tertiary transition-colors hover:bg-ds-surface2 hover:text-ds-fg sm:w-auto sm:gap-1.5 sm:px-2.5 sm:text-xs"
 												>
-													Actions
-													<ChevronDown className="h-4 w-4" />
+													<span className="sr-only">Actions</span>
+													<Ellipsis className="h-4 w-4" />
 												</button>
 											</DropdownMenuTrigger>
 											<DropdownMenuContent
@@ -837,7 +841,7 @@ function QrCodesPage() {
 					Codes per page
 					<select
 						aria-label="Codes per page"
-						className="toolkit-input w-auto"
+						className="toolkit-input w-full sm:w-auto"
 						value={pageSize}
 						onChange={(event) => {
 							setPageSize(Number(event.target.value));
@@ -966,7 +970,7 @@ function QrCodesPage() {
 							<button
 								type="button"
 								disabled={deleteCode.isPending}
-								className="inline-flex h-10 items-center justify-center rounded-xl border border-ds-border bg-ds-input-bg px-4 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:opacity-60"
+								className="inline-flex h-10 items-center justify-center rounded-lg border border-ds-border bg-ds-input-bg px-4 text-sm font-semibold text-ds-text-secondary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:opacity-60"
 							>
 								Cancel
 							</button>

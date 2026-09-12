@@ -68,10 +68,14 @@ export function QrToolkitPreview({
 		}
 	}
 	return (
-		<section className="space-y-4 rounded-2xl border border-ds-border bg-ds-surface p-5">
+		<section className="space-y-5 rounded-xl border border-ds-border bg-ds-surface2/65 p-5 sm:p-6 lg:sticky lg:top-0">
+			<div className="flex items-center justify-between gap-3">
+				<h2 className="text-base font-semibold">Live preview</h2>
+				<span className="text-xs text-ds-text-tertiary">Print-ready card</span>
+			</div>
 			<div
 				id="toolkit-print-card"
-				className="rounded-xl bg-[#ffffff] p-5 text-center text-[#172522]"
+				className="rounded-lg border border-black/5 bg-[#ffffff] p-5 text-center text-[#172522] shadow-sm"
 			>
 				<h2 className="break-words text-2xl font-bold">{title || "Scan me"}</h2>
 				<div
@@ -89,9 +93,9 @@ export function QrToolkitPreview({
 					{error}
 				</p>
 			) : null}
-			<div className="flex flex-wrap gap-2">
+			<div className="grid grid-cols-2 gap-2">
 				<button
-					className="toolkit-button"
+					className="toolkit-button toolkit-button-primary"
 					disabled={!ready}
 					type="button"
 					onClick={() => void download("png")}
@@ -128,7 +132,7 @@ export function QrToolkitPreview({
 				</button>
 			</div>
 			<details>
-				<summary className="cursor-pointer text-sm font-semibold">
+				<summary className="cursor-pointer text-xs font-medium text-ds-text-tertiary">
 					Encoded content
 				</summary>
 				<pre
