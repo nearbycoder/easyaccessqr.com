@@ -12,6 +12,11 @@ import {
 	MAX_QR_DESTINATIONS,
 	normalizeQrDestinations,
 } from "@/lib/qr-destinations";
+import {
+	assertActivationLimit,
+	bulkQrSchema,
+	updatedTags,
+} from "@/lib/qr-library";
 import { orgProcedure } from "../init";
 
 const analyticsRangeDaysSchema = z.union([
@@ -130,8 +135,9 @@ function toDestinationUrlKey(value: string | null | undefined) {
 
 async function countActiveQrCodesByOrganization(
 	organizationId: string,
+	executor: Pick<typeof db, "select"> = db,
 ): Promise<number> {
-	const rows = await db
+	const rows = await executor
 		.select({ count: count() })
 		.from(qrCode)
 		.where(
@@ -143,18 +149,24 @@ async function countActiveQrCodesByOrganization(
 async function assertCanUseAdditionalActiveQrCode({
 	organizationId,
 	userId,
+	executor = db,
 }: {
 	organizationId: string;
 	userId: string;
+	executor?: Pick<typeof db, "select" | "query">;
 }) {
 	const plan = await resolveOrganizationPlanLimits({
 		organizationId,
 		userId,
+		executor,
 	});
 	const limit = plan.limits.activeQrCodes;
 	if (limit < 0) return;
 
-	const activeCount = await countActiveQrCodesByOrganization(organizationId);
+	const activeCount = await countActiveQrCodesByOrganization(
+		organizationId,
+		executor,
+	);
 	if (activeCount >= limit) {
 		throw new TRPCError({
 			code: "PRECONDITION_FAILED",
@@ -220,6 +232,7 @@ async function resolveUniqueSlug(
 	organizationId: string,
 	rawSlug: string,
 	excludeId?: number,
+	executor: Pick<typeof db, "query"> = db,
 ): Promise<string> {
 	const base =
 		slugify(rawSlug) || `qr-${Math.random().toString(36).slice(2, 8)}`;
@@ -227,7 +240,7 @@ async function resolveUniqueSlug(
 	let suffix = 2;
 
 	while (true) {
-		const existing = await db.query.qrCode.findFirst({
+		const existing = await executor.query.qrCode.findFirst({
 			where: and(
 				eq(qrCode.organizationId, organizationId),
 				eq(qrCode.slug, candidate),
@@ -282,25 +295,30 @@ export const qrCodesRouter = {
 			});
 		}),
 
-	create: orgProcedure
-		.input(qrCreateSchema)
-		.mutation(async ({ ctx, input }) => {
+	create: orgProcedure.input(qrCreateSchema).mutation(async ({ ctx, input }) =>
+		db.transaction(async (tx) => {
+			await tx.execute(
+				sql`SELECT pg_advisory_xact_lock(hashtext(${ctx.organizationId}))`,
+			);
 			if (input.isActive !== false) {
 				await assertCanUseAdditionalActiveQrCode({
 					organizationId: ctx.organizationId,
 					userId: ctx.session.user.id,
+					executor: tx,
 				});
 			}
 			const slug = await resolveUniqueSlug(
 				ctx.organizationId,
 				input.slug ?? input.name,
+				undefined,
+				tx,
 			);
 			const destinationPayload = resolveDestinationPayload({
 				destinationUrl: input.destinationUrl,
 				destinations: input.destinations,
 			});
 
-			const inserted = await db
+			const inserted = await tx
 				.insert(qrCode)
 				.values({
 					organizationId: ctx.organizationId,
@@ -320,11 +338,14 @@ export const qrCodesRouter = {
 				slug,
 			};
 		}),
+	),
 
-	update: orgProcedure
-		.input(qrUpdateSchema)
-		.mutation(async ({ ctx, input }) => {
-			const current = await db.query.qrCode.findFirst({
+	update: orgProcedure.input(qrUpdateSchema).mutation(async ({ ctx, input }) =>
+		db.transaction(async (tx) => {
+			await tx.execute(
+				sql`SELECT pg_advisory_xact_lock(hashtext(${ctx.organizationId}))`,
+			);
+			const current = await tx.query.qrCode.findFirst({
 				where: and(
 					eq(qrCode.id, input.id),
 					eq(qrCode.organizationId, ctx.organizationId),
@@ -347,7 +368,12 @@ export const qrCodesRouter = {
 
 			const nextSlug =
 				input.slug !== undefined
-					? await resolveUniqueSlug(ctx.organizationId, input.slug, current.id)
+					? await resolveUniqueSlug(
+							ctx.organizationId,
+							input.slug,
+							current.id,
+							tx,
+						)
 					: current.slug;
 			const shouldUpdateDestinations =
 				input.destinationUrl !== undefined || input.destinations !== undefined;
@@ -363,10 +389,11 @@ export const qrCodesRouter = {
 				await assertCanUseAdditionalActiveQrCode({
 					organizationId: ctx.organizationId,
 					userId: ctx.session.user.id,
+					executor: tx,
 				});
 			}
 
-			await db
+			await tx
 				.update(qrCode)
 				.set({
 					...(input.name !== undefined ? { name: input.name.trim() } : {}),
@@ -389,6 +416,87 @@ export const qrCodesRouter = {
 				.where(eq(qrCode.id, current.id));
 
 			return { id: current.id, slug: nextSlug };
+		}),
+	),
+
+	bulkUpdate: orgProcedure
+		.input(bulkQrSchema)
+		.mutation(async ({ ctx, input }) => {
+			return db.transaction(async (tx) => {
+				await tx.execute(
+					sql`SELECT pg_advisory_xact_lock(hashtext(${ctx.organizationId}))`,
+				);
+				const scope = and(
+					eq(qrCode.organizationId, ctx.organizationId),
+					inArray(qrCode.id, input.ids),
+				);
+				const codes = await tx.select().from(qrCode).where(scope).for("update");
+				if (codes.length !== input.ids.length)
+					throw new TRPCError({
+						code: "NOT_FOUND",
+						message:
+							"Some selected codes are no longer available in this organization. Refresh and select again.",
+					});
+				if (input.action === "resume") {
+					const plan = await resolveOrganizationPlanLimits({
+						organizationId: ctx.organizationId,
+						userId: ctx.session.user.id,
+						executor: tx,
+					});
+					const active = await countActiveQrCodesByOrganization(
+						ctx.organizationId,
+						tx,
+					);
+					try {
+						assertActivationLimit(
+							active,
+							codes.filter((code) => !code.isActive).length,
+							plan.limits.activeQrCodes,
+						);
+					} catch (error) {
+						throw new TRPCError({
+							code: "PRECONDITION_FAILED",
+							message: (error as Error).message,
+						});
+					}
+				}
+				if (input.action === "add-tag" || input.action === "remove-tag") {
+					const action = input.action;
+					let changes: Array<{ id: number; tags: string[] }>;
+					try {
+						changes = codes.map((code) => ({
+							id: code.id,
+							tags: updatedTags(code.tags, action, input.tag ?? ""),
+						}));
+					} catch (error) {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: (error as Error).message,
+						});
+					}
+					for (const change of changes)
+						await tx
+							.update(qrCode)
+							.set({ tags: change.tags, updatedAt: new Date() })
+							.where(
+								and(
+									eq(qrCode.id, change.id),
+									eq(qrCode.organizationId, ctx.organizationId),
+								),
+							);
+				} else {
+					await tx
+						.update(qrCode)
+						.set({
+							...(["pause", "resume"].includes(input.action)
+								? { isActive: input.action === "resume" }
+								: { isPublic: input.action === "public" }),
+							updatedAt: new Date(),
+						})
+						.where(scope);
+				}
+				return { count: codes.length };
+			});
 		}),
 
 	delete: orgProcedure

@@ -15,6 +15,7 @@ import {
 	QrCode,
 	Search,
 	Settings,
+	Wrench,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -503,6 +504,12 @@ function SidebarContent({
 					onNavigate={onNavigate}
 				/>
 				<NavLink
+					to="/app/toolkit"
+					icon={Wrench}
+					label="QR toolkit"
+					onNavigate={onNavigate}
+				/>
+				<NavLink
 					to="/app/analytics"
 					icon={BarChart3}
 					label="Analytics"
@@ -585,6 +592,7 @@ function SidebarContent({
 }
 
 type StaticNavTarget =
+	| "/app/toolkit"
 	| "/app"
 	| "/app/analytics"
 	| "/app/qr-codes"

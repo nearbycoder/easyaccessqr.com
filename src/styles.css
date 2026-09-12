@@ -249,3 +249,19 @@ code {
     background-color: var(--ds-surface2) !important;
   }
 }
+
+.toolkit-label { display: grid; gap: .5rem; font-size: .875rem; font-weight: 600; }
+.toolkit-input { width: 100%; min-width: 0; padding: .65rem .8rem; border: 1px solid var(--ds-border); border-radius: .75rem; background: var(--ds-input-bg); color: var(--ds-fg); font-weight: 400; }
+.toolkit-input:focus-visible, .toolkit-button:focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 2px; }
+.toolkit-button { padding: .6rem .85rem; border: 1px solid var(--ds-border); border-radius: .75rem; font-size: .875rem; font-weight: 600; cursor: pointer; }
+.toolkit-button:hover { background: var(--ds-surface2); }
+.toolkit-button:disabled { opacity: .45; cursor: not-allowed; }
+@media print {
+  body:has(#toolkit-print-card) * { visibility: hidden; }
+  body:has(#toolkit-print-card) *:not(:has(#toolkit-print-card)):not(#toolkit-print-card):not(#toolkit-print-card *) { display: none !important; }
+  body:has(#toolkit-print-card), body:has(#toolkit-print-card) *:has(#toolkit-print-card) { height: auto !important; min-height: 0 !important; overflow: visible !important; position: static !important; display: block !important; margin: 0 !important; padding: 0 !important; border: 0 !important; }
+  body:has(#toolkit-print-card) #toolkit-print-card,
+  body:has(#toolkit-print-card) #toolkit-print-card * { visibility: visible; }
+  #toolkit-print-card { position: absolute; inset: 0 auto auto 0; width: 100%; max-width: 160mm; padding: 15mm; break-inside: avoid; }
+  #toolkit-print-card svg { width: 80mm; height: 80mm; }
+}

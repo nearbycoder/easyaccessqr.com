@@ -110,3 +110,41 @@ bun run dev
 - Hitting a short link (`/r/:org/:slug`) records a view and redirects to the selected destination.
 - If a code is paused, a styled status page is shown.
 - If a code is public, `?view=1` renders a public QR preview page without auth.
+
+## Campaign toolkit release
+
+The QR toolkit is available from workspace navigation at `/app/toolkit`.
+
+1. **Wi-Fi QR codes** — personal network credentials, hidden networks, and open networks.
+2. **Contact QR codes** — vCard 4.0 with name, company, phone, email, and website.
+3. **Email QR codes** — recipient, subject, and prefilled message.
+4. **SMS QR codes** — international number and prefilled message.
+5. **Phone QR codes** — dialer links using international numbers.
+6. **Map QR codes** — validated latitude and longitude, including zero coordinates.
+7. **Text QR codes** — multiline and Unicode content.
+8. **WhatsApp QR codes** — click-to-chat links with prefilled messages.
+9. **Campaign URL builder** — source, medium, campaign, term, and content parameters.
+10. **Tracking cleanup** — remove UTM and common advertising identifiers while retaining other query parameters and anchors.
+11. **Printable QR cards** — custom heading and caption, with PNG/SVG downloads and a print layout.
+12. **Bulk pause** — stop redirects for selected codes in one operation.
+13. **Bulk resume** — reactivate codes with atomic plan-limit checks.
+14. **Bulk visibility** — enable or disable public preview pages.
+15. **Bulk tagging** — add or remove a tag, respecting the 12-tag limit.
+16. **Bulk link copying** — copy selected tracked URLs, one per line.
+17. **Visibility filtering** — find codes with public pages enabled or disabled.
+18. **Routing filtering** — distinguish single destinations from weighted routing.
+19. **Scan-activity filtering** — find codes that have never been scanned or already have scans.
+20. **Library pagination** — 10, 25, or 50 codes per page with selection across pages.
+
+Toolkit codes embed their content directly: they are not stored as managed codes,
+are not editable after printing, and do not produce scan analytics. Network
+passwords are included in Wi-Fi codes; share the resulting card appropriately.
+Scanner support for contact and action formats depends on the scanning device.
+Payload conventions follow [ZXing's barcode content documentation](https://github.com/zxing/zxing/wiki/Barcode-Contents)
+and [vCard 4.0 (RFC 6350)](https://www.rfc-editor.org/rfc/rfc6350).
+
+Batch writes affect at most 100 selected codes in the current organization. A
+missing or unauthorized code, tag overflow, or activation-limit failure rolls
+back the whole batch. Changing filters clears selection. Individual and batch
+activation writes share an organization lock to protect plan limits under
+concurrent requests. This release requires no database schema migration.
