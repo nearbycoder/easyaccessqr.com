@@ -100,9 +100,7 @@ function AnalyticsPage() {
 		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-6 flex flex-wrap items-start justify-between gap-3 sm:mb-8">
 				<div>
-					<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
-						Analytics
-					</h1>
+					<h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
 					<p className="mt-1 text-base text-ds-text-secondary">
 						View trends, top-performing codes, and usage activity
 					</p>
@@ -131,7 +129,7 @@ function AnalyticsPage() {
 							id={qrCodeFieldId}
 							value={selectedCodeId}
 							onChange={(event) => setSelectedCodeId(event.target.value)}
-							className="h-11 rounded-xl border border-ds-border bg-white px-3 text-sm text-ds-fg outline-none transition-colors focus:border-ds-accent"
+							className="h-11 rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm text-ds-fg transition-colors focus:border-ds-accent"
 						>
 							<option value="all">All Codes</option>
 							{(qrCodes ?? []).map((code) => (
@@ -162,8 +160,8 @@ function AnalyticsPage() {
 											isActive
 												? "border-ds-accent bg-ds-accent/10 text-ds-accent"
 												: isUnavailable
-													? "cursor-not-allowed border-ds-border bg-white/50 text-ds-text-tertiary/50"
-													: "border-ds-border bg-white text-ds-text-tertiary hover:border-ds-accent hover:text-ds-accent"
+													? "cursor-not-allowed border-ds-border bg-ds-input-bg/50 text-ds-text-tertiary/50"
+													: "border-ds-border bg-ds-input-bg text-ds-text-tertiary hover:border-ds-accent hover:text-ds-accent"
 										}`}
 									>
 										{option.label}
@@ -239,7 +237,7 @@ function AnalyticsPage() {
 
 						<div className="overflow-hidden rounded-2xl border border-ds-border bg-ds-surface">
 							<div className="border-b border-ds-border px-4 py-3">
-								<h2 className="text-2xl font-semibold tracking-tight">
+								<h2 className="text-base font-semibold tracking-tight">
 									Top codes
 								</h2>
 							</div>
@@ -378,7 +376,7 @@ function DailyScanTrend({
 	return (
 		<div className="overflow-hidden rounded-2xl border border-ds-border bg-ds-surface">
 			<div className="border-b border-ds-border px-4 py-3">
-				<h2 className="text-2xl font-semibold tracking-tight">View trend</h2>
+				<h2 className="text-base font-semibold tracking-tight">View trend</h2>
 			</div>
 			<div className="px-4 py-4">
 				<div className="mb-4 grid grid-cols-3 gap-2">
@@ -393,7 +391,7 @@ function DailyScanTrend({
 					<TrendStat label="Average/day" value={averageScans.toFixed(1)} />
 				</div>
 
-				<div className="rounded-xl border border-ds-border bg-white p-3">
+				<div className="rounded-xl border border-ds-border bg-ds-input-bg p-3">
 					<div className="relative w-full aspect-[3/1] min-h-[210px]">
 						{hoveredPoint && hoveredPercent !== null ? (
 							<div

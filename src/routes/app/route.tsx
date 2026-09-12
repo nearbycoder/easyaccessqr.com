@@ -141,7 +141,7 @@ function OrgSetup() {
 								key={organization.id}
 								type="button"
 								onClick={() => void handleSelect(organization.id)}
-								className="flex w-full items-center justify-between border border-ds-border bg-white px-3 py-2 text-left text-sm font-semibold text-ds-fg transition-colors hover:bg-ds-surface2"
+								className="flex w-full items-center justify-between border border-ds-border bg-ds-input-bg px-3 py-2 text-left text-sm font-semibold text-ds-fg transition-colors hover:bg-ds-surface2"
 							>
 								<span>{organization.name}</span>
 								<span className="text-xs font-medium text-ds-text-tertiary">
@@ -167,7 +167,7 @@ function OrgSetup() {
 							setOrgSlug(event.target.value.toLowerCase().replace(/\s+/g, "-"));
 						}}
 						required
-						className="w-full border border-ds-border bg-white px-3 py-2 text-sm"
+						className="w-full border border-ds-border bg-ds-input-bg px-3 py-2 text-sm"
 					/>
 					<input
 						aria-label="Organization slug"
@@ -175,7 +175,7 @@ function OrgSetup() {
 						value={orgSlug}
 						onChange={(event) => setOrgSlug(event.target.value)}
 						required
-						className="w-full border border-ds-border bg-white px-3 py-2 text-sm"
+						className="w-full border border-ds-border bg-ds-input-bg px-3 py-2 text-sm"
 					/>
 					<button
 						type="submit"
@@ -221,13 +221,19 @@ function AppShell({
 
 	return (
 		<div className="min-h-screen bg-ds-bg text-ds-fg md:flex md:h-svh md:overflow-hidden">
+			<a
+				href="#app-main"
+				className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-ds-surface focus:px-4 focus:py-3"
+			>
+				Skip to content
+			</a>
 			<AppCommandMenu
 				session={session}
 				organizations={organizations}
 				onSignOut={handleSignOut}
 			/>
 
-			<aside className="hidden w-[240px] shrink-0 border-r border-ds-border bg-ds-surface md:flex md:flex-col md:min-h-0">
+			<aside className="hidden w-[232px] shrink-0 border-r border-ds-border bg-ds-surface2/60 md:flex md:flex-col md:min-h-0">
 				<SidebarContent session={session} organizations={organizations} />
 			</aside>
 
@@ -239,7 +245,7 @@ function AppShell({
 								type="button"
 								aria-label="Open app navigation"
 								onClick={() => setMobileNavOpen(true)}
-								className="inline-flex h-9 w-9 items-center justify-center border border-ds-border bg-white text-ds-text-secondary"
+								className="inline-flex h-9 w-9 items-center justify-center border border-ds-border bg-ds-input-bg text-ds-text-secondary"
 							>
 								<Menu className="h-4 w-4" />
 							</button>
@@ -252,7 +258,7 @@ function AppShell({
 							<button
 								type="button"
 								onClick={openCommandMenu}
-								className="flex h-10 w-full max-w-sm items-center justify-between rounded-xl border border-ds-border bg-ds-input-bg px-3 text-sm text-ds-text-tertiary transition-colors hover:border-ds-accent hover:text-ds-fg"
+								className="flex h-9 w-full max-w-xs items-center justify-between rounded-lg border border-transparent bg-ds-surface2/70 px-3 text-sm text-ds-text-tertiary transition-colors hover:border-ds-accent hover:text-ds-fg"
 							>
 								<span className="inline-flex items-center gap-2">
 									<Search className="h-4 w-4" />
@@ -269,7 +275,7 @@ function AppShell({
 								<DropdownMenuTrigger asChild>
 									<button
 										type="button"
-										className="inline-flex items-center gap-2 rounded-xl border border-ds-border bg-white px-2 py-1 text-left sm:gap-2.5 sm:px-2.5"
+										className="inline-flex max-w-64 items-center gap-2 rounded-lg border border-transparent bg-ds-surface px-2 py-1 text-left transition-colors hover:bg-ds-surface2 sm:gap-2.5 sm:px-2.5"
 									>
 										<div className="flex h-7 w-7 items-center justify-center rounded-full bg-ds-surface2 text-[11px] font-extrabold text-ds-accent sm:h-8 sm:w-8 sm:text-xs">
 											{session.user.name?.charAt(0) ?? "U"}
@@ -323,7 +329,11 @@ function AppShell({
 					</SheetContent>
 				</Sheet>
 
-				<main className="min-h-0 min-w-0 flex-1 overflow-auto p-4 sm:p-6">
+				<main
+					id="app-main"
+					tabIndex={-1}
+					className="min-h-0 min-w-0 flex-1 overflow-auto p-4 sm:p-6 lg:p-8"
+				>
 					<Outlet />
 				</main>
 			</div>
@@ -411,14 +421,14 @@ function SidebarContent({
 
 	return (
 		<div className="flex h-full min-h-0 flex-col">
-			<div className="border-b border-ds-border px-4 py-4">
-				<div className="text-[24px] font-extrabold leading-none tracking-tight whitespace-nowrap text-[#de6346]">
+			<div className="flex h-14 shrink-0 items-center px-5">
+				<div className="text-[20px] font-bold leading-none tracking-tight whitespace-nowrap text-[#de6346]">
 					Easy Access QR
 				</div>
 			</div>
 
-			<div className="border-b border-ds-border px-3 py-3">
-				<div className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-ds-text-tertiary">
+			<div className="px-3 pb-4 pt-3">
+				<div className="mb-2 px-1 text-[11px] font-medium uppercase tracking-wider text-ds-text-tertiary">
 					Organization
 				</div>
 				<DropdownMenu>
@@ -426,7 +436,7 @@ function SidebarContent({
 						<button
 							type="button"
 							disabled={switchingOrgId !== null || creatingOrg}
-							className="flex w-full items-center justify-between gap-2 border border-ds-border bg-white px-2.5 py-2 text-left text-sm font-semibold"
+							className="flex w-full items-center justify-between gap-2 border border-ds-border bg-ds-input-bg px-2.5 py-2 text-left text-sm font-semibold"
 						>
 							<div className="flex min-w-0 items-center gap-2">
 								<Building2 className="h-4 w-4 shrink-0 text-ds-text-tertiary" />
@@ -489,7 +499,10 @@ function SidebarContent({
 				) : null}
 			</div>
 
-			<nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-2 py-3">
+			<nav
+				aria-label="Primary navigation"
+				className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-2"
+			>
 				<NavLink
 					to="/app"
 					icon={Home}
@@ -555,14 +568,14 @@ function SidebarContent({
 							}}
 							placeholder="Organization name"
 							required
-							className="w-full border border-ds-border bg-white px-3 py-2 text-sm"
+							className="w-full border border-ds-border bg-ds-input-bg px-3 py-2 text-sm"
 						/>
 						<input
 							value={newOrgSlug}
 							onChange={(event) => setNewOrgSlug(event.target.value)}
 							placeholder="organization-slug"
 							required
-							className="w-full border border-ds-border bg-white px-3 py-2 text-sm"
+							className="w-full border border-ds-border bg-ds-input-bg px-3 py-2 text-sm"
 						/>
 						{createOrgError ? (
 							<p className="text-xs text-red-600">{createOrgError}</p>
@@ -572,7 +585,7 @@ function SidebarContent({
 								type="button"
 								onClick={() => setCreateOrgOpen(false)}
 								disabled={creatingOrg}
-								className="border border-ds-border bg-white px-3 py-1.5 text-xs font-semibold"
+								className="border border-ds-border bg-ds-input-bg px-3 py-1.5 text-xs font-semibold"
 							>
 								Cancel
 							</button>
@@ -617,10 +630,10 @@ function NavLink({
 			to={to}
 			onClick={onNavigate}
 			activeOptions={{ exact }}
-			className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-ds-text-secondary transition-colors hover:bg-ds-surface2 hover:text-ds-fg"
+			className="flex items-center gap-2.5 rounded-lg border border-transparent px-3 py-2.5 text-sm font-medium text-ds-text-secondary transition-colors hover:bg-ds-surface2 hover:text-ds-fg"
 			activeProps={{
 				className:
-					"flex items-center gap-2.5 border border-ds-border bg-ds-surface2 px-3 py-2 text-sm font-semibold !text-ds-accent",
+					"border-ds-border bg-ds-surface font-semibold !text-ds-accent shadow-sm",
 			}}
 		>
 			<Icon className="h-4 w-4" />

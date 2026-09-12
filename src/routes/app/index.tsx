@@ -174,10 +174,10 @@ function DashboardHome() {
 			<div className="mx-auto w-full max-w-[1320px]">
 				{analyticsQuery.isError ? <AnalyticsNotice /> : null}
 				<section className="rounded-2xl border border-ds-border bg-ds-surface p-5 sm:p-6">
-					<h1 className="text-3xl font-bold tracking-tight">
+					<h1 className="text-2xl font-semibold tracking-tight">
 						Welcome to Easy Access QR
 					</h1>
-					<p className="mt-1 text-sm text-ds-text-secondary sm:text-base">
+					<p className="mt-1 text-sm text-ds-text-secondary">
 						Complete onboarding to unlock your compact dashboard with live
 						performance snapshots.
 					</p>
@@ -193,7 +193,7 @@ function DashboardHome() {
 						</div>
 						<div className="h-2 w-full overflow-hidden rounded-full bg-ds-surface2">
 							<div
-								className="h-full bg-ds-accent transition-all duration-300"
+								className="h-full bg-ds-accent motion-safe:transition-[width] duration-300"
 								style={{ width: `${onboardingProgress}%` }}
 							/>
 						</div>
@@ -202,7 +202,7 @@ function DashboardHome() {
 
 				<div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
 					<section className="rounded-2xl border border-ds-border bg-ds-surface p-4 sm:p-5">
-						<h2 className="text-xl font-semibold tracking-tight">
+						<h2 className="text-base font-semibold tracking-tight">
 							Setup checklist
 						</h2>
 						<div className="mt-4 space-y-3">
@@ -217,7 +217,7 @@ function DashboardHome() {
 					</section>
 
 					<section className="rounded-2xl border border-ds-border bg-ds-surface p-4 sm:p-5">
-						<h2 className="text-xl font-semibold tracking-tight">
+						<h2 className="text-base font-semibold tracking-tight">
 							Current workspace snapshot
 						</h2>
 						<div className="mt-4 grid grid-cols-2 gap-3">
@@ -241,11 +241,11 @@ function DashboardHome() {
 	return (
 		<div className="mx-auto w-full max-w-[1320px]">
 			{analyticsQuery.isError ? <AnalyticsNotice /> : null}
-			<section className="mb-4 rounded-2xl border border-ds-border bg-ds-surface p-5 sm:p-6">
+			<section className="mb-6">
 				<div className="flex flex-wrap items-start justify-between gap-3">
 					<div>
-						<h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-						<p className="mt-1 text-sm text-ds-text-secondary sm:text-base">
+						<h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+						<p className="mt-1 text-sm text-ds-text-secondary">
 							Quick performance summary for your active QR workspace.
 						</p>
 					</div>
@@ -269,7 +269,7 @@ function DashboardHome() {
 			<div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
 				<section className="rounded-2xl border border-ds-border bg-ds-surface">
 					<div className="border-b border-ds-border px-4 py-3 sm:px-5">
-						<h2 className="text-xl font-semibold tracking-tight">
+						<h2 className="text-base font-semibold tracking-tight">
 							Analytics snapshot
 						</h2>
 						<p className="mt-1 text-xs text-ds-text-tertiary">
@@ -297,7 +297,7 @@ function DashboardHome() {
 
 				<section className="rounded-2xl border border-ds-border bg-ds-surface">
 					<div className="border-b border-ds-border px-4 py-3 sm:px-5">
-						<h2 className="text-xl font-semibold tracking-tight">
+						<h2 className="text-base font-semibold tracking-tight">
 							Recent QR codes
 						</h2>
 						<p className="mt-1 text-xs text-ds-text-tertiary">
@@ -425,9 +425,11 @@ function OnboardingStepCard({
 
 function SmallStat({ label, value }: { label: string; value: number }) {
 	return (
-		<div className="rounded-xl border border-ds-border bg-ds-surface2/45 px-3 py-3">
+		<div className="rounded-xl border border-ds-border bg-ds-surface px-4 py-5">
 			<p className="text-xs font-medium text-ds-text-tertiary">{label}</p>
-			<p className="mt-1 text-2xl font-bold tracking-tight">{value}</p>
+			<p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight">
+				{value}
+			</p>
 		</div>
 	);
 }
@@ -469,7 +471,7 @@ function MiniTrendChart({
 	};
 
 	return (
-		<div className="rounded-xl border border-ds-border bg-ds-input-bg p-3">
+		<div className="p-1">
 			<div className="flex items-center justify-between text-xs text-ds-text-tertiary">
 				<span className="inline-flex items-center gap-1">
 					<BarChart3 className="h-3.5 w-3.5 text-ds-accent" />

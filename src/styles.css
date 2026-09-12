@@ -14,7 +14,7 @@ body {
 }
 
 code {
-  font-family: 'DM Sans', Menlo, Monaco, Consolas, monospace;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 }
 
 /* ── Shadcn defaults ─────────────────────── */
@@ -91,28 +91,9 @@ code {
 }
 
 /* ── Easy Access QR dashboard theme ──────────── */
-.dark {
-  --ds-bg: #1f2427;
-  --ds-fg: #eef2f2;
-  --ds-accent: #3f8f8c;
-  --ds-accent-hover: #357976;
-  --ds-accent-fg: #f7fbfb;
-  --ds-muted: #a2afb0;
-  --ds-muted2: #889596;
-  --ds-muted3: #5a6768;
-  --ds-border: #414b4c;
-  --ds-border-strong: #556263;
-  --ds-surface: #252b2f;
-  --ds-surface2: #2d353a;
-  --ds-input-bg: #242b2e;
-  --ds-text-secondary: #d4dddd;
-  --ds-text-tertiary: #a6b3b4;
-  --ds-selection-bg: #3f8f8c;
-  --ds-selection-fg: #f7fbfb;
-}
-
+:root,
 .light {
-  --ds-bg: #f6f7f6;
+  --ds-bg: #f8faf9;
   --ds-fg: #1f2522;
   --ds-accent: #2f7f7c;
   --ds-accent-hover: #256b68;
@@ -120,7 +101,7 @@ code {
   --ds-muted: #5f6e67;
   --ds-muted2: #7b8883;
   --ds-muted3: #aeb9b4;
-  --ds-border: #d3dbd6;
+  --ds-border: #e0e6e3;
   --ds-border-strong: #c2ccc7;
   --ds-surface: #ffffff;
   --ds-surface2: #f0f4f2;
@@ -129,6 +110,26 @@ code {
   --ds-text-tertiary: #66726e;
   --ds-selection-bg: #d3ecea;
   --ds-selection-fg: #153736;
+}
+
+.dark {
+  --ds-bg: #1f2427;
+  --ds-fg: #eef2f2;
+  --ds-accent: #70c2bb;
+  --ds-accent-hover: #8dd3cd;
+  --ds-accent-fg: #102c29;
+  --ds-muted: #a2afb0;
+  --ds-muted2: #889596;
+  --ds-muted3: #5a6768;
+  --ds-border: #394347;
+  --ds-border-strong: #556263;
+  --ds-surface: #252b2f;
+  --ds-surface2: #2d353a;
+  --ds-input-bg: #242b2e;
+  --ds-text-secondary: #d4dddd;
+  --ds-text-tertiary: #a6b3b4;
+  --ds-selection-bg: #3f8f8c;
+  --ds-selection-fg: #f7fbfb;
 }
 
 @theme inline {
@@ -210,7 +211,7 @@ code {
 
   button,
   a.inline-flex {
-    border-radius: 0.65rem !important;
+    border-radius: 0.5rem;
   }
 
   .font-display {
@@ -232,14 +233,6 @@ code {
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08), 0 2px 8px rgba(16, 24, 40, 0.04) !important;
   }
 
-  .rounded-2xl {
-    border-radius: 0.7rem !important;
-  }
-
-  .rounded-3xl {
-    border-radius: 0.9rem !important;
-  }
-
   /* Keep legacy white surfaces readable in dark mode while redesign cleanup is in progress. */
   .dark .bg-white {
     background-color: var(--ds-input-bg) !important;
@@ -250,13 +243,28 @@ code {
   }
 }
 
-.toolkit-label { display: grid; gap: .5rem; font-size: .875rem; font-weight: 600; }
-.toolkit-input { width: 100%; min-width: 0; padding: .65rem .8rem; border: 1px solid var(--ds-border); border-radius: .75rem; background: var(--ds-input-bg); color: var(--ds-fg); font-weight: 400; }
-.toolkit-input:focus-visible, .toolkit-button:focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 2px; }
-.toolkit-button { padding: .6rem .85rem; border: 1px solid var(--ds-border); border-radius: .75rem; font-size: .875rem; font-weight: 600; cursor: pointer; }
-.toolkit-button:hover { background: var(--ds-surface2); }
-.toolkit-button:disabled { opacity: .45; cursor: not-allowed; }
+@layer components {
+  .toolkit-label { display: grid; gap: .5rem; font-size: .875rem; font-weight: 500; color: var(--ds-text-secondary); }
+  .toolkit-input { width: 100%; min-width: 0; min-height: 2.5rem; padding: .55rem .75rem; border: 1px solid var(--ds-border-strong); border-radius: .5rem; background: var(--ds-input-bg); color: var(--ds-fg); font-size: .875rem; font-weight: 400; }
+  .toolkit-button { min-height: 2.5rem; padding: .5rem .8rem; border: 1px solid var(--ds-border); border-radius: .5rem; background: var(--ds-surface); color: var(--ds-text-secondary); font-size: .875rem; font-weight: 500; cursor: pointer; transition: background-color 150ms, border-color 150ms; }
+  .toolkit-button:hover { background: var(--ds-surface2); border-color: var(--ds-border-strong); }
+  .toolkit-button:disabled { opacity: .45; cursor: not-allowed; }
+  .toolkit-button-primary { background: var(--ds-accent); border-color: var(--ds-accent); color: var(--ds-accent-fg); }
+  .toolkit-button-primary:hover { background: var(--ds-accent-hover); border-color: var(--ds-accent-hover); }
+}
+
+@layer base {
+  :root, .light { color-scheme: light; }
+  .dark { color-scheme: dark; }
+  :where(button, a, input, select, textarea, summary):focus-visible { outline: 2px solid var(--ds-accent); outline-offset: 3px; }
+  input[type="checkbox"] { accent-color: var(--ds-accent); width: 1rem; height: 1rem; flex-shrink: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+}
+
 @media print {
+  body:has(#toolkit-print-card) { background: white; color-scheme: light; }
   body:has(#toolkit-print-card) * { visibility: hidden; }
   body:has(#toolkit-print-card) *:not(:has(#toolkit-print-card)):not(#toolkit-print-card):not(#toolkit-print-card *) { display: none !important; }
   body:has(#toolkit-print-card), body:has(#toolkit-print-card) *:has(#toolkit-print-card) { height: auto !important; min-height: 0 !important; overflow: visible !important; position: static !important; display: block !important; margin: 0 !important; padding: 0 !important; border: 0 !important; }

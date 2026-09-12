@@ -74,22 +74,23 @@ function ToolkitPage() {
 	const update = (key: string, value: string) =>
 		setFields((current) => ({ ...current, [key]: value }));
 	return (
-		<div className="mx-auto max-w-[1200px] space-y-6">
+		<div className="mx-auto w-full max-w-[1320px] space-y-6">
 			<header>
-				<p className="text-xs font-semibold uppercase tracking-widest text-ds-accent">
-					Campaign essentials
-				</p>
-				<h1 className="mt-2 text-3xl font-extrabold tracking-tight">
-					QR toolkit
-				</h1>
+				<h1 className="text-2xl font-semibold tracking-tight">QR toolkit</h1>
 				<p className="mt-2 max-w-2xl text-sm text-ds-text-secondary">
 					Create ready-to-print QR cards for everyday connections. These static
 					codes contain your content directly; they do not expire, track scans,
 					or change after printing.
 				</p>
 			</header>
-			<div className="grid items-start gap-6 lg:grid-cols-2">
-				<section className="space-y-5 rounded-2xl border border-ds-border bg-ds-surface p-5">
+			<div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+				<section className="space-y-5 rounded-xl border border-ds-border bg-ds-surface p-5 sm:p-6">
+					<div className="border-b border-ds-border pb-4">
+						<h2 className="text-base font-semibold">QR content</h2>
+						<p className="mt-1 text-sm text-ds-text-tertiary">
+							Choose a type and add the details to encode.
+						</p>
+					</div>
 					<label className="toolkit-label">
 						QR type
 						<select
@@ -211,7 +212,7 @@ function ToolkitPage() {
 							{error}
 						</p>
 					) : null}
-					<div className="space-y-4 border-t border-ds-border pt-4">
+					<div className="space-y-4 border-t border-ds-border pt-5">
 						<h2 className="font-semibold">Print card</h2>
 						<label className="toolkit-label">
 							Card heading

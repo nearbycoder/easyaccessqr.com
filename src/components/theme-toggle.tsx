@@ -5,19 +5,19 @@ const THEME_OPTIONS = [
 	{
 		value: "system" as const,
 		icon: Monitor,
-		label: "Sys",
+		label: "System",
 		accessibleLabel: "Use system theme",
 	},
 	{
 		value: "dark" as const,
 		icon: Moon,
-		label: "Drk",
+		label: "Dark",
 		accessibleLabel: "Use dark theme",
 	},
 	{
 		value: "light" as const,
 		icon: Sun,
-		label: "Lgt",
+		label: "Light",
 		accessibleLabel: "Use light theme",
 	},
 ] as const;
@@ -27,7 +27,7 @@ export function ThemeToggle() {
 
 	return (
 		<fieldset
-			className="flex overflow-hidden rounded-xl border-[2px] border-ds-border"
+			className="flex gap-1 rounded-lg border border-ds-border bg-ds-surface2 p-1"
 			aria-label="Color theme"
 		>
 			{THEME_OPTIONS.map((opt) => (
@@ -38,9 +38,9 @@ export function ThemeToggle() {
 					aria-pressed={theme === opt.value}
 					title={opt.accessibleLabel}
 					onClick={() => setTheme(opt.value)}
-					className={`flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-[10px] font-extrabold tracking-wide transition-all duration-100 ${
+					className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-1.5 py-2 text-xs font-medium transition-colors ${
 						theme === opt.value
-							? "bg-ds-accent text-ds-accent-fg"
+							? "bg-ds-surface text-ds-fg shadow-sm"
 							: "text-ds-muted hover:text-ds-fg"
 					}`}
 				>
