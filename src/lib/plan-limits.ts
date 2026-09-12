@@ -106,17 +106,19 @@ export async function resolveOrganizationPlanLimits({
 	organizationId,
 	userId,
 	userIds,
+	executor = db,
 }: {
 	organizationId: string;
 	userId?: string | null;
 	userIds?: string[];
+	executor?: Pick<typeof db, "query">;
 }) {
 	const _unusedUserId = userId;
 	const _unusedUserIds = userIds;
 	void _unusedUserId;
 	void _unusedUserIds;
 
-	const orgSubs = await db.query.subscription.findMany({
+	const orgSubs = await executor.query.subscription.findMany({
 		where: eq(subscription.referenceId, organizationId),
 		orderBy: [desc(subscription.periodEnd)],
 	});

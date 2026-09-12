@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { QrLibraryFilters } from "@/components/qr/qr-library-controls";
 import { QrPreviewModal } from "@/components/qr/qr-preview-modal";
 import {
 	Dialog,
@@ -47,6 +48,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { useTRPC } from "@/integrations/trpc/react";
 import { authClient } from "@/lib/auth-client";
 import { copyText, downloadCsv } from "@/lib/client-export";
+import { defaultLibraryFilters, matchesLibraryFilters } from "@/lib/qr-library";
 import {
 	buildQrPublicPreviewPath,
 	buildQrShortPath,
@@ -70,6 +72,15 @@ function QrCodesPage() {
 	const queryClient = useQueryClient();
 	const [previewCodeId, setPreviewCodeId] = useState<number | null>(null);
 	const [deleteCodeId, setDeleteCodeId] = useState<number | null>(null);
+	const [libraryFilters, setLibraryFilters] = useState(defaultLibraryFilters);
+	const [selectedIds, setSelectedIds] = useState<number[]>([]);
+	const [pageIndex, setPageIndex] = useState(0);
+	const [pageSize, setPageSize] = useState(25);
+	const [bulkAction, setBulkAction] = useState<
+		"pause" | "resume" | "public" | "private" | "add-tag" | "remove-tag"
+	>("pause");
+	const [bulkTag, setBulkTag] = useState("");
+	const [confirmBulk, setConfirmBulk] = useState(false);
 	const [searchValue, setSearchValue] = useState("");
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 	const [tagFilter, setTagFilter] = useState("all");
@@ -128,6 +139,17 @@ function QrCodesPage() {
 		}),
 	);
 
+	const bulkUpdate = useMutation(
+		trpc.qrCodes.bulkUpdate.mutationOptions({
+			onSuccess: async (result) => {
+				setConfirmBulk(false);
+				setSelectedIds([]);
+				await queryClient.invalidateQueries();
+				toast.success(`Updated ${result.count} QR codes`);
+			},
+			onError: (error) => toast.error(error.message),
+		}),
+	);
 	const allCodes = useMemo(() => qrCodes ?? [], [qrCodes]);
 	const allTags = useMemo(
 		() =>
@@ -140,6 +162,7 @@ function QrCodesPage() {
 		const normalizedQuery = searchValue.trim().toLowerCase();
 		return allCodes
 			.filter((code) => {
+				if (!matchesLibraryFilters(code, libraryFilters)) return false;
 				if (statusFilter === "active" && !code.isActive) return false;
 				if (statusFilter === "paused" && code.isActive) return false;
 				if (tagFilter !== "all" && !code.tags.includes(tagFilter)) return false;
@@ -153,7 +176,43 @@ function QrCodesPage() {
 				if (sortOption === "views") return right.scanCount - left.scanCount;
 				return right.createdAt.getTime() - left.createdAt.getTime();
 			});
-	}, [allCodes, searchValue, sortOption, statusFilter, tagFilter]);
+	}, [
+		allCodes,
+		searchValue,
+		sortOption,
+		statusFilter,
+		tagFilter,
+		libraryFilters,
+	]);
+	const pageCount = Math.max(1, Math.ceil(visibleCodes.length / pageSize));
+	const currentPage = Math.min(pageIndex, pageCount - 1);
+	const pageCodes = visibleCodes.slice(
+		currentPage * pageSize,
+		(currentPage + 1) * pageSize,
+	);
+	// Hidden selections never participate in a batch operation.
+	const selectedCodes = visibleCodes.filter((code) =>
+		selectedIds.includes(code.id),
+	);
+	const resetLibrary = () => {
+		setLibraryFilters(defaultLibraryFilters);
+		setSelectedIds([]);
+		setPageIndex(0);
+	};
+	const copySelectedLinks = async () => {
+		try {
+			await copyText(
+				selectedCodes
+					.map((code) =>
+						toAbsoluteUrl(buildQrShortPath(activeOrganizationSlug, code.slug)),
+					)
+					.join("\n"),
+			);
+			toast.success(`Copied ${selectedCodes.length} short links`);
+		} catch {
+			toast.error("Unable to copy links.");
+		}
+	};
 	const previewCode = useMemo(
 		() => allCodes.find((code) => code.id === previewCodeId) ?? null,
 		[allCodes, previewCodeId],
@@ -176,7 +235,8 @@ function QrCodesPage() {
 	const hasActiveFilters =
 		Boolean(searchValue.trim()) ||
 		statusFilter !== "all" ||
-		tagFilter !== "all";
+		tagFilter !== "all" ||
+		Object.values(libraryFilters).some((value) => value !== "all");
 
 	const copyShortLink = async (slug: string) => {
 		const path = buildQrShortPath(activeOrganizationSlug, slug);
@@ -275,7 +335,11 @@ function QrCodesPage() {
 						<input
 							aria-label="Search QR codes"
 							value={searchValue}
-							onChange={(event) => setSearchValue(event.target.value)}
+							onChange={(event) => {
+								setSearchValue(event.target.value);
+								setPageIndex(0);
+								setSelectedIds([]);
+							}}
 							placeholder="Search name, link, destination, or tag"
 							className="h-10 w-full rounded-xl border border-ds-border bg-ds-input-bg py-2 pl-9 pr-3 text-sm text-ds-fg outline-none transition-colors placeholder:text-ds-text-tertiary focus:border-ds-accent"
 						/>
@@ -288,9 +352,11 @@ function QrCodesPage() {
 						<NativeSelect
 							aria-label="Filter QR codes by status"
 							value={statusFilter}
-							onChange={(event) =>
-								setStatusFilter(event.target.value as StatusFilter)
-							}
+							onChange={(event) => {
+								setPageIndex(0);
+								setSelectedIds([]);
+								setStatusFilter(event.target.value as StatusFilter);
+							}}
 							className="h-10 border border-ds-border bg-ds-input-bg pl-9 text-sm text-ds-fg"
 						>
 							<option value="all">All statuses</option>
@@ -306,7 +372,11 @@ function QrCodesPage() {
 						<NativeSelect
 							aria-label="Filter QR codes by tag"
 							value={tagFilter}
-							onChange={(event) => setTagFilter(event.target.value)}
+							onChange={(event) => {
+								setTagFilter(event.target.value);
+								setPageIndex(0);
+								setSelectedIds([]);
+							}}
 							className="h-10 border border-ds-border bg-ds-input-bg pl-9 text-sm text-ds-fg"
 						>
 							<option value="all">All tags</option>
@@ -339,6 +409,7 @@ function QrCodesPage() {
 						type="button"
 						onClick={() => {
 							setSearchValue("");
+							resetLibrary();
 							setStatusFilter("all");
 							setTagFilter("all");
 						}}
@@ -349,6 +420,107 @@ function QrCodesPage() {
 						Reset
 					</button>
 				</div>
+			</div>
+
+			<div className="mb-4 rounded-2xl border border-ds-border bg-ds-surface p-4">
+				<details>
+					<summary className="cursor-pointer text-sm font-semibold">
+						More filters
+					</summary>
+					<QrLibraryFilters
+						value={libraryFilters}
+						onChange={(value) => {
+							setLibraryFilters(value);
+							setPageIndex(0);
+							setSelectedIds([]);
+						}}
+					/>
+				</details>
+			</div>
+			<div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-ds-border bg-ds-surface p-4">
+				<label className="flex items-center gap-2 text-sm">
+					<input
+						type="checkbox"
+						aria-label="Select this page"
+						disabled={!pageCodes.length || bulkUpdate.isPending}
+						checked={
+							pageCodes.length > 0 &&
+							pageCodes.every((code) => selectedIds.includes(code.id))
+						}
+						onChange={(event) =>
+							setSelectedIds(
+								event.target.checked
+									? [
+											...new Set([
+												...selectedIds,
+												...pageCodes.map((code) => code.id),
+											]),
+										].slice(0, 100)
+									: selectedIds.filter(
+											(id) => !pageCodes.some((code) => code.id === id),
+										),
+							)
+						}
+					/>
+					Select page
+				</label>
+				<span aria-live="polite" className="text-sm">
+					{selectedCodes.length} selected (max 100)
+				</span>
+				<button
+					type="button"
+					className="toolkit-button"
+					disabled={!selectedIds.length || bulkUpdate.isPending}
+					onClick={() => setSelectedIds([])}
+				>
+					Clear selection
+				</button>
+				<button
+					type="button"
+					className="toolkit-button"
+					disabled={!selectedCodes.length || !activeOrganizationSlug}
+					onClick={() => void copySelectedLinks()}
+				>
+					Copy selected links
+				</button>
+				<select
+					className="toolkit-input w-auto"
+					aria-label="Bulk action"
+					value={bulkAction}
+					disabled={bulkUpdate.isPending}
+					onChange={(event) =>
+						setBulkAction(event.target.value as typeof bulkAction)
+					}
+				>
+					<option value="pause">Pause selected</option>
+					<option value="resume">Resume selected</option>
+					<option value="public">Enable public pages</option>
+					<option value="private">Disable public pages</option>
+					<option value="add-tag">Add tag</option>
+					<option value="remove-tag">Remove tag</option>
+				</select>
+				{["add-tag", "remove-tag"].includes(bulkAction) ? (
+					<input
+						aria-label="Bulk tag"
+						placeholder="Tag"
+						maxLength={30}
+						className="toolkit-input max-w-48"
+						value={bulkTag}
+						onChange={(event) => setBulkTag(event.target.value)}
+					/>
+				) : null}
+				<button
+					type="button"
+					className="toolkit-button"
+					disabled={
+						!selectedCodes.length ||
+						bulkUpdate.isPending ||
+						(["add-tag", "remove-tag"].includes(bulkAction) && !bulkTag.trim())
+					}
+					onClick={() => setConfirmBulk(true)}
+				>
+					Apply to selected
+				</button>
 			</div>
 
 			<div className="overflow-hidden rounded-2xl border border-ds-border bg-ds-surface">
@@ -417,6 +589,7 @@ function QrCodesPage() {
 							type="button"
 							onClick={() => {
 								setSearchValue("");
+								resetLibrary();
 								setStatusFilter("all");
 								setTagFilter("all");
 							}}
@@ -428,7 +601,7 @@ function QrCodesPage() {
 					</div>
 				) : (
 					<div>
-						{visibleCodes.map((code) => (
+						{pageCodes.map((code) => (
 							<div
 								key={code.id}
 								data-testid="qr-code-row"
@@ -441,7 +614,26 @@ function QrCodesPage() {
 											Short links are the tracked entrypoint. Destination remains visible as the final target.
 										*/}
 										<div className="text-lg font-semibold tracking-tight sm:text-xl">
-											{code.name}
+											<label className="inline-flex items-center gap-3">
+												<input
+													type="checkbox"
+													aria-label={`Select ${code.name}`}
+													checked={selectedIds.includes(code.id)}
+													disabled={
+														bulkUpdate.isPending ||
+														(selectedIds.length >= 100 &&
+															!selectedIds.includes(code.id))
+													}
+													onChange={(event) =>
+														setSelectedIds((ids) =>
+															event.target.checked
+																? [...ids, code.id]
+																: ids.filter((id) => id !== code.id),
+														)
+													}
+												/>
+												{code.name}
+											</label>
 										</div>
 										<div className="mt-1 text-sm text-ds-accent">
 											<span className="font-semibold">Short link:</span>{" "}
@@ -636,6 +828,106 @@ function QrCodesPage() {
 					</div>
 				)}
 			</div>
+
+			<nav
+				aria-label="QR code pagination"
+				className="my-4 flex flex-wrap items-center justify-between gap-3"
+			>
+				<label className="flex items-center gap-2 text-sm">
+					Codes per page
+					<select
+						aria-label="Codes per page"
+						className="toolkit-input w-auto"
+						value={pageSize}
+						onChange={(event) => {
+							setPageSize(Number(event.target.value));
+							setPageIndex(0);
+						}}
+					>
+						<option value="10">10</option>
+						<option value="25">25</option>
+						<option value="50">50</option>
+					</select>
+				</label>
+				<div className="flex items-center gap-3">
+					<button
+						type="button"
+						className="toolkit-button"
+						disabled={currentPage === 0}
+						onClick={() => setPageIndex(currentPage - 1)}
+					>
+						Previous page
+					</button>
+					<span className="text-sm">
+						Page {currentPage + 1} of {pageCount}
+					</span>
+					<button
+						type="button"
+						className="toolkit-button"
+						disabled={currentPage + 1 >= pageCount}
+						onClick={() => setPageIndex(currentPage + 1)}
+					>
+						Next page
+					</button>
+				</div>
+			</nav>
+			<Dialog
+				open={confirmBulk}
+				onOpenChange={(open) => {
+					if (!bulkUpdate.isPending) setConfirmBulk(open);
+				}}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Update {selectedCodes.length} QR codes?</DialogTitle>
+						<DialogDescription>
+							This will{" "}
+							{
+								{
+									pause: "pause redirects for",
+									resume: "resume redirects for",
+									public: "enable public preview pages for",
+									private: "disable public preview pages for",
+									"add-tag": `add the tag “${bulkTag.trim()}” to`,
+									"remove-tag": `remove the tag “${bulkTag.trim()}” from`,
+								}[bulkAction]
+							}{" "}
+							the selected codes.
+						</DialogDescription>
+					</DialogHeader>
+					<ul className="max-h-48 overflow-auto text-sm">
+						{selectedCodes.map((code) => (
+							<li key={code.id}>{code.name}</li>
+						))}
+					</ul>
+					<DialogFooter>
+						<button
+							className="toolkit-button"
+							type="button"
+							disabled={bulkUpdate.isPending}
+							onClick={() => setConfirmBulk(false)}
+						>
+							Cancel
+						</button>
+						<button
+							className="toolkit-button"
+							type="button"
+							disabled={bulkUpdate.isPending || !selectedCodes.length}
+							onClick={() =>
+								bulkUpdate.mutate({
+									ids: selectedCodes.map((code) => code.id),
+									action: bulkAction,
+									...(["add-tag", "remove-tag"].includes(bulkAction)
+										? { tag: bulkTag.trim() }
+										: {}),
+								})
+							}
+						>
+							{bulkUpdate.isPending ? "Updating…" : "Confirm update"}
+						</button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
 			<QrPreviewModal
 				open={Boolean(previewCode)}

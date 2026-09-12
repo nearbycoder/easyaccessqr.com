@@ -135,6 +135,16 @@ export function AppCommandMenu({
 				action: () => navigate({ to: "/app/qr-codes" }),
 			},
 			{
+				id: "go-toolkit",
+				group: "Navigation",
+				label: "Open QR toolkit",
+				description: "/app/toolkit",
+				keywords:
+					"wifi contact email sms phone map text whatsapp campaign print",
+				icon: QrCode,
+				action: () => navigate({ to: "/app/toolkit" }),
+			},
+			{
 				id: "go-analytics",
 				group: "Navigation",
 				label: "Open analytics",

@@ -30,7 +30,7 @@ export default defineConfig({
 			...process.env,
 			BETTER_AUTH_URL: process.env.BETTER_AUTH_URL ?? baseURL,
 			BETTER_AUTH_SECRET:
-				process.env.BETTER_AUTH_SECRET ?? "playwright-local-secret",
+				process.env.BETTER_AUTH_SECRET ?? "playwright-local-secret-at-least-32-characters",
 			BETTER_AUTH_TRUSTED_ORIGINS:
 				process.env.BETTER_AUTH_TRUSTED_ORIGINS ??
 				"http://127.0.0.1:3000,http://localhost:3000",

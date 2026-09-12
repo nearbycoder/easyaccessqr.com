@@ -18,6 +18,7 @@ import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
+import { Route as AppToolkitRouteImport } from './routes/app/toolkit'
 import { Route as AppQrCodesRouteImport } from './routes/app/qr-codes'
 import { Route as AppAnalyticsRouteImport } from './routes/app/analytics'
 import { Route as ApiOgRouteImport } from './routes/api/og'
@@ -81,6 +82,11 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   id: '/auth/forgot-password',
   path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppToolkitRoute = AppToolkitRouteImport.update({
+  id: '/toolkit',
+  path: '/toolkit',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppQrCodesRoute = AppQrCodesRouteImport.update({
   id: '/qr-codes',
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/api/og': typeof ApiOgRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/qr-codes': typeof AppQrCodesRouteWithChildren
+  '/app/toolkit': typeof AppToolkitRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/api/og': typeof ApiOgRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/qr-codes': typeof AppQrCodesRouteWithChildren
+  '/app/toolkit': typeof AppToolkitRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/api/og': typeof ApiOgRoute
   '/app/analytics': typeof AppAnalyticsRoute
   '/app/qr-codes': typeof AppQrCodesRouteWithChildren
+  '/app/toolkit': typeof AppToolkitRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/api/og'
     | '/app/analytics'
     | '/app/qr-codes'
+    | '/app/toolkit'
     | '/auth/forgot-password'
     | '/auth/reset-password'
     | '/auth/sign-in'
@@ -298,6 +308,7 @@ export interface FileRouteTypes {
     | '/api/og'
     | '/app/analytics'
     | '/app/qr-codes'
+    | '/app/toolkit'
     | '/auth/forgot-password'
     | '/auth/reset-password'
     | '/auth/sign-in'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/api/og'
     | '/app/analytics'
     | '/app/qr-codes'
+    | '/app/toolkit'
     | '/auth/forgot-password'
     | '/auth/reset-password'
     | '/auth/sign-in'
@@ -429,6 +441,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/forgot-password'
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/toolkit': {
+      id: '/app/toolkit'
+      path: '/toolkit'
+      fullPath: '/app/toolkit'
+      preLoaderRoute: typeof AppToolkitRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/app/qr-codes': {
       id: '/app/qr-codes'
@@ -576,6 +595,7 @@ const AppQrCodesRouteWithChildren = AppQrCodesRoute._addFileChildren(
 interface AppRouteRouteChildren {
   AppAnalyticsRoute: typeof AppAnalyticsRoute
   AppQrCodesRoute: typeof AppQrCodesRouteWithChildren
+  AppToolkitRoute: typeof AppToolkitRoute
   AppIndexRoute: typeof AppIndexRoute
   AppSettingsApiKeysRoute: typeof AppSettingsApiKeysRoute
   AppSettingsBillingRoute: typeof AppSettingsBillingRoute
@@ -591,6 +611,7 @@ interface AppRouteRouteChildren {
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppAnalyticsRoute: AppAnalyticsRoute,
   AppQrCodesRoute: AppQrCodesRouteWithChildren,
+  AppToolkitRoute: AppToolkitRoute,
   AppIndexRoute: AppIndexRoute,
   AppSettingsApiKeysRoute: AppSettingsApiKeysRoute,
   AppSettingsBillingRoute: AppSettingsBillingRoute,
