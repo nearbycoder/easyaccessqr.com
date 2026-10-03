@@ -54,7 +54,7 @@ export function MarketingHeader({
 					<Link
 						to="/"
 						aria-label="Easy Access QR home"
-						className="shrink-0 whitespace-nowrap text-xl font-extrabold leading-none tracking-tight text-[#de6346] sm:text-2xl lg:text-[30px]"
+						className="shrink-0 whitespace-nowrap text-xl font-semibold leading-none tracking-tight text-[#de6346] sm:text-2xl lg:text-[30px]"
 					>
 						Easy Access QR
 					</Link>
@@ -114,7 +114,7 @@ export function MarketingHeader({
 					className="w-[88vw] max-w-sm border-r border-ds-border bg-ds-surface p-0 text-ds-fg"
 				>
 					<SheetHeader className="border-b border-ds-border p-5 text-left">
-						<SheetTitle className="text-xl font-extrabold text-[#de6346]">
+						<SheetTitle className="text-xl font-semibold text-[#de6346]">
 							Easy Access QR
 						</SheetTitle>
 						<SheetDescription className="text-ds-text-secondary">

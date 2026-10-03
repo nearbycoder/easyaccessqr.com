@@ -94,8 +94,8 @@ function UserProfilePage({ userId }: { userId: string }) {
 	if (profileQuery.isLoading && !profile) {
 		return (
 			<div className="mx-auto w-full max-w-[1320px]">
-				<div className="h-36 animate-pulse border-2 border-ds-muted3 rounded-xl bg-ds-surface/20" />
-				<div className="mt-4 h-56 animate-pulse border-2 border-ds-muted3 rounded-xl bg-ds-surface/20" />
+				<div className="h-36 animate-pulse border border-ds-muted3 rounded-xl bg-ds-surface/20" />
+				<div className="mt-4 h-56 animate-pulse border border-ds-muted3 rounded-xl bg-ds-surface/20" />
 			</div>
 		);
 	}
@@ -103,7 +103,7 @@ function UserProfilePage({ userId }: { userId: string }) {
 	if (profileQuery.isError || !profile) {
 		return (
 			<div className="mx-auto w-full max-w-[1320px]">
-				<div className="border-2 border-red-500/60 bg-red-500/5 px-4 py-3 text-sm text-red-400">
+				<div className="border border-red-500/60 bg-red-500/5 px-4 py-3 text-sm text-red-400">
 					Profile Load Error{" "}
 					{profileQuery.error instanceof Error
 						? profileQuery.error.message
@@ -117,11 +117,11 @@ function UserProfilePage({ userId }: { userId: string }) {
 		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-6 flex flex-wrap items-start justify-between gap-3">
 				<div className="flex items-center gap-3">
-					<div className="flex h-12 w-12 items-center justify-center bg-ds-accent text-sm font-extrabold text-ds-accent-fg">
+					<div className="flex h-12 w-12 items-center justify-center bg-ds-accent text-sm font-semibold text-ds-accent-fg">
 						{getInitials(profile.user.name)}
 					</div>
 					<div>
-						<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
+						<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
 							{profile.user.name}
 						</h1>
 						<p className="mt-1 text-sm text-ds-muted">
@@ -131,8 +131,8 @@ function UserProfilePage({ userId }: { userId: string }) {
 				</div>
 			</div>
 
-			<div className="border-2 border-ds-muted3 rounded-xl p-4">
-				<div className="mb-2 text-xs font-extrabold tracking-wide text-ds-text-tertiary">
+			<div className="border border-ds-muted3 rounded-xl p-4">
+				<div className="mb-2 text-xs font-semibold tracking-wide text-ds-text-tertiary">
 					Bio
 				</div>
 				{profile.user.bio ? (
@@ -144,18 +144,18 @@ function UserProfilePage({ userId }: { userId: string }) {
 				)}
 			</div>
 
-			<div className="mt-6 border-2 border-ds-muted3 rounded-xl">
-				<div className="border-b-2 border-ds-muted3 px-4 py-3 sm:px-5">
+			<div className="mt-6 border border-ds-muted3 rounded-xl">
+				<div className="border-b border-ds-muted3 px-4 py-3 sm:px-5">
 					<div className="flex items-center justify-between gap-2">
 						<div>
-							<h2 className="text-sm font-extrabold tracking-wide">
+							<h2 className="text-sm font-semibold tracking-wide">
 								Created QR codes
 							</h2>
 							<p className="mt-1 text-[11px] text-ds-text-tertiary">
 								Author timeline
 							</p>
 						</div>
-						<div className="text-[10px] font-extrabold tracking-wide text-ds-text-tertiary">
+						<div className="text-[10px] font-semibold tracking-wide text-ds-text-tertiary">
 							{codes.length} codes loaded
 						</div>
 					</div>
@@ -169,7 +169,7 @@ function UserProfilePage({ userId }: { userId: string }) {
 								className="border-b-[2px] border-ds-muted3/70 px-4 py-4 last:border-b-0 sm:px-5"
 							>
 								<div className="mb-2 flex items-center justify-between gap-2">
-									<div className="text-xs font-extrabold tracking-wide">
+									<div className="text-xs font-semibold tracking-wide">
 										{code.name}
 									</div>
 									<div className="text-[10px] font-bold tracking-wide text-ds-accent">
@@ -197,7 +197,7 @@ function UserProfilePage({ userId }: { userId: string }) {
 					type="button"
 					onClick={loadMore}
 					disabled={profileQuery.isFetching}
-					className="mt-4 inline-flex items-center gap-2 border-[2px] border-ds-muted3 px-3 py-1.5 text-[10px] font-extrabold tracking-wide text-ds-text-tertiary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
+					className="mt-4 inline-flex items-center gap-2 border-[2px] border-ds-muted3 px-3 py-1.5 text-[10px] font-semibold tracking-wide text-ds-text-tertiary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					<QrCode className="h-3.5 w-3.5" />
 					{profileQuery.isFetching ? "Loading..." : "Load more"}

@@ -240,7 +240,7 @@ function MembersPage() {
 	return (
 		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-8">
-				<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
+				<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
 					Members
 				</h1>
 				<p className="text-ds-muted text-sm mt-1">
@@ -249,10 +249,10 @@ function MembersPage() {
 			</div>
 
 			{/* Invite */}
-			<div className="mb-6 border-2 border-ds-border rounded-2xl bg-ds-surface/60 p-4 sm:p-6">
+			<div className="mb-6 border border-ds-border rounded-2xl bg-ds-surface/60 p-4 sm:p-6">
 				<div className="flex items-center gap-2 mb-4">
 					<UserPlus className="w-4 h-4 text-ds-accent" />
-					<span className="text-sm font-extrabold tracking-wide text-ds-accent">
+					<span className="text-sm font-semibold tracking-wide text-ds-accent">
 						Invite Member
 					</span>
 				</div>
@@ -269,12 +269,12 @@ function MembersPage() {
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								required
-								className="min-w-0 flex-1 bg-ds-input-bg border-2 border-ds-muted3 rounded-xl px-4 py-2.5 text-ds-fg font-sans text-sm transition-colors placeholder:text-ds-muted2 focus:border-ds-accent focus:outline-none"
+								className="min-w-0 flex-1 bg-ds-input-bg border border-ds-muted3 rounded-xl px-4 py-2.5 text-ds-fg font-sans text-sm transition-colors placeholder:text-ds-muted2 focus:border-ds-accent focus:outline-none"
 							/>
 							<button
 								type="submit"
 								disabled={inviting}
-								className="flex w-full shrink-0 items-center justify-center gap-2 bg-ds-accent px-6 py-2.5 text-sm font-extrabold tracking-wide text-ds-accent-fg transition-colors hover:bg-ds-accent-hover disabled:opacity-50 sm:w-auto"
+								className="flex w-full shrink-0 items-center justify-center gap-2 bg-ds-accent px-6 py-2.5 text-sm font-semibold tracking-wide text-ds-accent-fg transition-colors hover:bg-ds-accent-hover disabled:opacity-50 sm:w-auto"
 							>
 								<Mail className="w-4 h-4" />
 								{inviting ? "Sending..." : "Invite"}
@@ -299,8 +299,8 @@ function MembersPage() {
 			</div>
 
 			{/* Members List */}
-			<div className="border-2 border-ds-border rounded-2xl bg-ds-surface/60">
-				<div className="border-b-2 border-ds-border p-4">
+			<div className="border border-ds-border rounded-2xl bg-ds-surface/60">
+				<div className="border-b border-ds-border p-4">
 					<div className="flex flex-wrap items-center justify-between gap-3">
 						<span className="text-sm font-bold tracking-wide text-ds-muted">
 							Current Members ({filteredMembers.length}/{memberList.length})
@@ -381,7 +381,7 @@ function MembersPage() {
 									className="flex flex-col gap-3 border-b border-ds-border p-4 transition-colors last:border-b-0 hover:bg-ds-surface/50 sm:flex-row sm:items-center sm:justify-between"
 								>
 									<div className="flex items-center gap-3">
-										<div className="w-7 h-7 bg-ds-accent text-ds-accent-fg flex items-center justify-center font-extrabold text-[10px]">
+										<div className="w-7 h-7 bg-ds-accent text-ds-accent-fg flex items-center justify-center font-semibold text-[10px]">
 											{member.name
 												.split(" ")
 												.map((n) => n[0])
@@ -434,7 +434,7 @@ function MembersPage() {
 														disabled={
 															isBusy || isSelf || selectedRole === member.role
 														}
-														className="inline-flex items-center gap-1 border-[2px] border-ds-muted3 px-2 py-1 text-[10px] font-extrabold tracking-wide text-ds-text-tertiary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
+														className="inline-flex items-center gap-1 border-[2px] border-ds-muted3 px-2 py-1 text-[10px] font-semibold tracking-wide text-ds-text-tertiary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
 													>
 														<Save className="h-3 w-3" />
 														{isSavingRole ? "Saving..." : "Save role"}
@@ -444,7 +444,7 @@ function MembersPage() {
 														aria-label={`Deactivate ${member.name}`}
 														onClick={() => setDeactivateCandidate(member)}
 														disabled={isBusy || isSelf}
-														className="inline-flex items-center gap-1 border-[2px] border-red-500/70 px-2 py-1 text-[10px] font-extrabold tracking-wide text-red-500 transition-colors hover:border-red-400 hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400"
+														className="inline-flex items-center gap-1 border-[2px] border-red-500/70 px-2 py-1 text-[10px] font-semibold tracking-wide text-red-500 transition-colors hover:border-red-400 hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50 dark:text-red-400"
 													>
 														<UserX className="h-3 w-3" />
 														{isDeactivating ? "Deactivating..." : "Deactivate"}
@@ -465,7 +465,7 @@ function MembersPage() {
 									type="button"
 									onClick={() => setPage((current) => Math.max(1, current - 1))}
 									disabled={clampedPage <= 1}
-									className="border-[2px] border-ds-muted3 px-2 py-1 text-[10px] font-extrabold tracking-wide text-ds-text-tertiary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
+									className="border-[2px] border-ds-muted3 px-2 py-1 text-[10px] font-semibold tracking-wide text-ds-text-tertiary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									Prev
 								</button>
@@ -478,7 +478,7 @@ function MembersPage() {
 										setPage((current) => Math.min(totalPages, current + 1))
 									}
 									disabled={clampedPage >= totalPages}
-									className="border-[2px] border-ds-muted3 px-2 py-1 text-[10px] font-extrabold tracking-wide text-ds-text-tertiary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
+									className="border-[2px] border-ds-muted3 px-2 py-1 text-[10px] font-semibold tracking-wide text-ds-text-tertiary transition-colors hover:border-ds-accent hover:text-ds-accent disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									Next
 								</button>

@@ -84,8 +84,8 @@ function SignUp() {
 			<div className="w-full max-w-md">
 				<AuthBrand />
 
-				<div className="border-2 border-ds-border-strong rounded-2xl shadow-[4px_4px_0_0_var(--color-ds-border-strong)] p-6 sm:p-8">
-					<h1 className="text-2xl font-extrabold tracking-tighter mb-2">
+				<div className="border border-ds-border-strong rounded-2xl shadow-sm p-6 sm:p-8">
+					<h1 className="text-2xl font-semibold tracking-tight mb-2">
 						Create Account
 					</h1>
 					<p className="text-sm text-ds-muted mb-8">
@@ -100,7 +100,7 @@ function SignUp() {
 
 					<form onSubmit={handleSubmit} className="space-y-6">
 						{error && (
-							<div className="border-2 border-red-500 bg-red-500/10 p-3 text-red-400 text-sm font-bold">
+							<div className="border border-red-500 bg-red-500/10 p-3 text-red-400 text-sm font-bold">
 								Error: {error}
 							</div>
 						)}
@@ -118,7 +118,7 @@ function SignUp() {
 								onChange={(e) => setName(e.target.value)}
 								required
 								placeholder="Jane Doe"
-								className="w-full bg-ds-input-bg border-2 border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors placeholder:text-ds-muted2"
+								className="w-full bg-ds-input-bg border border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors placeholder:text-ds-muted2"
 							/>
 						</div>
 						<div>
@@ -135,7 +135,7 @@ function SignUp() {
 								onChange={(e) => setEmail(e.target.value)}
 								required
 								placeholder="you@company.com"
-								className="w-full bg-ds-input-bg border-2 border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors placeholder:text-ds-muted2"
+								className="w-full bg-ds-input-bg border border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors placeholder:text-ds-muted2"
 							/>
 						</div>
 						<div>
@@ -153,13 +153,13 @@ function SignUp() {
 								required
 								minLength={8}
 								placeholder="min 8 chars"
-								className="w-full bg-ds-input-bg border-2 border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors placeholder:text-ds-muted2"
+								className="w-full bg-ds-input-bg border border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors placeholder:text-ds-muted2"
 							/>
 						</div>
 						<button
 							type="submit"
 							disabled={loading}
-							className="w-full bg-ds-accent text-ds-accent-fg py-3 font-extrabold text-sm tracking-wide hover:bg-ds-accent-hover transition-colors disabled:opacity-50"
+							className="w-full bg-ds-accent text-ds-accent-fg py-3 font-semibold text-sm tracking-wide hover:bg-ds-accent-hover transition-colors disabled:opacity-50"
 						>
 							{loading ? "Creating account..." : "Create Account"}
 						</button>

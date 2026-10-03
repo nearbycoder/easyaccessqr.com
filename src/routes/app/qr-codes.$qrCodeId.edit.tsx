@@ -125,7 +125,7 @@ function EditQrCodePage() {
 					<ArrowLeft className="h-4 w-4" />
 					Back to QR codes
 				</Link>
-				<h1 className="mt-2 text-2xl font-extrabold tracking-tighter sm:text-3xl">
+				<h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
 					Edit QR code
 				</h1>
 				<p className="mt-1 text-base text-ds-text-secondary">

@@ -24,7 +24,10 @@ const NativeSelect = React.forwardRef<HTMLSelectElement, NativeSelectProps>(
 			<div className={cn("relative", wrapperClassName)}>
 				<select
 					ref={ref}
-					className={cn("w-full appearance-none pr-10", className)}
+					className={cn(
+						"h-10 w-full min-w-0 appearance-none rounded-md border border-input bg-card py-2 pl-3 pr-10 text-sm text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30",
+						className,
+					)}
 					{...props}
 				>
 					{children}
@@ -35,7 +38,10 @@ const NativeSelect = React.forwardRef<HTMLSelectElement, NativeSelectProps>(
 						iconWrapperClassName,
 					)}
 				>
-					<ChevronDown className={cn("h-4 w-4", iconClassName)} />
+					<ChevronDown
+						aria-hidden="true"
+						className={cn("size-4", iconClassName)}
+					/>
 				</span>
 			</div>
 		);

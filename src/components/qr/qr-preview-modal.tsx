@@ -173,7 +173,7 @@ export function QrPreviewModal({
 						</div>
 						<div
 							ref={handlePreviewContainerRef}
-							className="flex min-h-[260px] items-center justify-center overflow-hidden rounded-lg border border-ds-border bg-white p-3 [&>canvas]:h-auto [&>canvas]:max-w-full [&>svg]:h-auto [&>svg]:max-w-full"
+							className="flex min-h-[260px] items-center justify-center overflow-hidden rounded-lg border border-ds-border bg-ds-surface p-3 [&>canvas]:h-auto [&>canvas]:max-w-full [&>svg]:h-auto [&>svg]:max-w-full"
 						/>
 					</div>
 
