@@ -204,9 +204,9 @@ function LandingPage() {
 
 			<section id={PRODUCT_SECTION_ID} className="px-4 pb-12 sm:px-6 sm:pb-16">
 				<div className="mx-auto grid w-full max-w-6xl gap-4 md:grid-cols-[1fr_280px]">
-					<div className="relative rounded-3xl border border-ds-border bg-ds-surface p-4 shadow-[0_18px_60px_-36px_color-mix(in_oklab,var(--ds-accent)_55%,transparent)] sm:p-6">
+					<div className="relative rounded-3xl border border-ds-border bg-ds-surface p-4 shadow-sm sm:p-6">
 						<div className="mb-4 flex items-center justify-between border-b border-ds-border pb-3">
-							<div className="text-xl font-extrabold text-[#de6346]">
+							<div className="text-xl font-semibold text-[#de6346]">
 								Easy Access QR
 							</div>
 							<div className="text-sm text-ds-text-tertiary">
@@ -223,9 +223,7 @@ function LandingPage() {
 								</div>
 								<div className="text-right">
 									<p className="text-xs text-ds-text-tertiary">Scans today</p>
-									<p className="text-2xl font-extrabold text-ds-accent">
-										1,284
-									</p>
+									<p className="text-2xl font-semibold text-ds-accent">1,284</p>
 								</div>
 							</div>
 							<div className="grid gap-3 sm:grid-cols-3">
@@ -326,7 +324,7 @@ function LandingPage() {
 									</div>
 								) : null}
 								<div className="mt-2 flex items-end gap-1">
-									<span className="text-3xl font-extrabold tracking-tight">
+									<span className="text-3xl font-semibold tracking-tight">
 										{plan.price}
 									</span>
 									{plan.period ? (
@@ -828,7 +826,7 @@ function HomepageQrBuilderModal({
 						<div className="mb-2 text-xs font-semibold text-ds-text-tertiary">
 							Live preview
 						</div>
-						<div className="rounded-xl border border-ds-border bg-white p-3">
+						<div className="rounded-xl border border-ds-border bg-ds-surface p-3">
 							<div
 								ref={assignPreviewContainer}
 								className="flex min-h-[320px] items-center justify-center overflow-hidden rounded-lg [&>canvas]:h-auto [&>canvas]:max-w-full [&>svg]:h-auto [&>svg]:max-w-full"

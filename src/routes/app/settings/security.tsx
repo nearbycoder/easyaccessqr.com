@@ -56,28 +56,28 @@ function SecuritySettingsPage() {
 	return (
 		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-8">
-				<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
+				<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
 					Security
 				</h1>
 				<p className="text-ds-muted text-sm mt-1">Update account password</p>
 			</div>
 
-			<div className="border-2 border-ds-border rounded-2xl bg-ds-surface/60 p-4 sm:p-6">
+			<div className="border border-ds-border rounded-2xl bg-ds-surface/60 p-4 sm:p-6">
 				<div className="mb-4 flex items-center gap-2">
 					<ShieldCheck className="h-4 w-4 text-ds-accent" />
-					<span className="text-sm font-extrabold tracking-wide text-ds-accent">
+					<span className="text-sm font-semibold tracking-wide text-ds-accent">
 						Change Password
 					</span>
 				</div>
 
 				<form onSubmit={handleSubmit} className="space-y-4">
 					{error && (
-						<div className="border-2 border-red-500 bg-red-500/10 p-3 text-red-400 text-sm font-bold">
+						<div className="border border-red-500 bg-red-500/10 p-3 text-red-400 text-sm font-bold">
 							Error: {error}
 						</div>
 					)}
 					{success && (
-						<div className="border-2 border-ds-accent bg-ds-accent/10 p-3 text-ds-accent text-sm font-bold">
+						<div className="border border-ds-accent bg-ds-accent/10 p-3 text-ds-accent text-sm font-bold">
 							{success}
 						</div>
 					)}
@@ -95,7 +95,7 @@ function SecuritySettingsPage() {
 							value={currentPassword}
 							onChange={(event) => setCurrentPassword(event.target.value)}
 							required
-							className="w-full bg-ds-input-bg border-2 border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors"
+							className="w-full bg-ds-input-bg border border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors"
 						/>
 					</div>
 
@@ -114,7 +114,7 @@ function SecuritySettingsPage() {
 							required
 							minLength={8}
 							placeholder="min 8 chars"
-							className="w-full bg-ds-input-bg border-2 border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors placeholder:text-ds-muted2"
+							className="w-full bg-ds-input-bg border border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors placeholder:text-ds-muted2"
 						/>
 					</div>
 
@@ -132,7 +132,7 @@ function SecuritySettingsPage() {
 							onChange={(event) => setConfirmPassword(event.target.value)}
 							required
 							minLength={8}
-							className="w-full bg-ds-input-bg border-2 border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors"
+							className="w-full bg-ds-input-bg border border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors"
 						/>
 					</div>
 
@@ -149,7 +149,7 @@ function SecuritySettingsPage() {
 					<button
 						type="submit"
 						disabled={loading}
-						className="inline-flex w-full items-center justify-center gap-2 bg-ds-accent px-6 py-3 text-sm font-extrabold tracking-wide text-ds-accent-fg transition-colors hover:bg-ds-accent-hover disabled:opacity-50 sm:w-auto"
+						className="inline-flex w-full items-center justify-center gap-2 bg-ds-accent px-6 py-3 text-sm font-semibold tracking-wide text-ds-accent-fg transition-colors hover:bg-ds-accent-hover disabled:opacity-50 sm:w-auto"
 					>
 						<LockKeyhole className="h-4 w-4" />
 						{loading ? "Updating..." : "Update password"}

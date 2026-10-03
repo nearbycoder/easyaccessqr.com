@@ -76,12 +76,12 @@ function BillingPage() {
 		return (
 			<div className="mx-auto w-full max-w-[1320px]">
 				<div className="mb-8">
-					<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
+					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
 						Billing
 					</h1>
 					<p className="text-ds-muted text-sm mt-1">Manage your subscription</p>
 				</div>
-				<div className="border-2 border-ds-border rounded-2xl bg-ds-surface/60 p-6 text-sm text-ds-muted">
+				<div className="border border-ds-border rounded-2xl bg-ds-surface/60 p-6 text-sm text-ds-muted">
 					Member access: Billing is managed by organization owners and admins.
 				</div>
 			</div>
@@ -171,7 +171,7 @@ function BillingPage() {
 	return (
 		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-8">
-				<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
+				<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
 					Billing
 				</h1>
 				<p className="text-ds-muted text-sm mt-1">Manage your subscription</p>
@@ -184,10 +184,10 @@ function BillingPage() {
 			) : null}
 
 			{isPaidPlan && (
-				<div className="mb-6 border-2 border-ds-border rounded-2xl bg-ds-surface/60 p-4 sm:p-5">
+				<div className="mb-6 border border-ds-border rounded-2xl bg-ds-surface/60 p-4 sm:p-5">
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 						<div>
-							<div className="font-extrabold tracking-wide text-sm">
+							<div className="font-semibold tracking-wide text-sm">
 								Current Subscription: {getPlanDisplayName(currentPlan)}
 							</div>
 							<div className="text-ds-muted text-xs mt-1">
@@ -208,7 +208,7 @@ function BillingPage() {
 								type="button"
 								onClick={handleManagePortal}
 								disabled={busyAction !== null || PAID_PLANS_COMING_SOON}
-								className="border-2 border-ds-border rounded-2xl bg-ds-surface/60 px-3 py-2 text-xs font-extrabold tracking-wide hover:bg-ds-surface disabled:opacity-50"
+								className="border border-ds-border rounded-2xl bg-ds-surface/60 px-3 py-2 text-xs font-semibold tracking-wide hover:bg-ds-surface disabled:opacity-50"
 							>
 								<Settings2 className="mr-2 inline h-3.5 w-3.5" />
 								Manage in Stripe
@@ -218,7 +218,7 @@ function BillingPage() {
 									type="button"
 									onClick={handleRestore}
 									disabled={busyAction !== null || PAID_PLANS_COMING_SOON}
-									className="border-2 border-ds-accent px-3 py-2 text-xs font-extrabold tracking-wide text-ds-accent hover:bg-ds-accent hover:text-ds-accent-fg disabled:opacity-50"
+									className="border border-ds-accent px-3 py-2 text-xs font-semibold tracking-wide text-ds-accent hover:bg-ds-accent hover:text-ds-accent-fg disabled:opacity-50"
 								>
 									<RotateCcw className="mr-2 inline h-3.5 w-3.5" />
 									Restore
@@ -228,7 +228,7 @@ function BillingPage() {
 									type="button"
 									onClick={handleCancel}
 									disabled={busyAction !== null || PAID_PLANS_COMING_SOON}
-									className="border-2 border-red-500 px-3 py-2 text-xs font-extrabold tracking-wide text-red-500 hover:bg-red-500 hover:text-black disabled:opacity-50"
+									className="border border-red-500 px-3 py-2 text-xs font-semibold tracking-wide text-red-500 hover:bg-red-500 hover:text-black disabled:opacity-50"
 								>
 									Cancel Plan
 								</button>
@@ -250,18 +250,18 @@ function BillingPage() {
 					return (
 						<div
 							key={plan.id}
-							className={`-mt-2 -ml-0 flex flex-col border-2 p-6 md:mt-0 md:-ml-2 md:p-8 first:ml-0 ${
+							className={`-mt-2 -ml-0 flex flex-col border p-6 md:mt-0 md:-ml-2 md:p-8 first:ml-0 ${
 								plan.popular
 									? "bg-ds-accent text-ds-accent-fg border-ds-accent"
 									: "border-ds-border"
 							}`}
 						>
 							{plan.popular && (
-								<div className="text-xs font-extrabold tracking-wide mb-4 bg-ds-bg text-ds-accent inline-block px-3 py-1 self-start">
+								<div className="text-xs font-semibold tracking-wide mb-4 bg-ds-bg text-ds-accent inline-block px-3 py-1 self-start">
 									Recommended
 								</div>
 							)}
-							<h3 className="text-2xl font-extrabold tracking-tighter">
+							<h3 className="text-2xl font-semibold tracking-tight">
 								{plan.name}
 							</h3>
 							{disablePaidPlanActions ? (
@@ -270,7 +270,7 @@ function BillingPage() {
 								</div>
 							) : null}
 							<div className="mt-4">
-								<span className="text-4xl font-extrabold sm:text-5xl">
+								<span className="text-4xl font-semibold sm:text-5xl">
 									{plan.price}
 								</span>
 								<span
@@ -292,10 +292,10 @@ function BillingPage() {
 									<button
 										type="button"
 										disabled
-										className={`w-full py-3 font-extrabold text-sm tracking-wide opacity-50 ${
+										className={`w-full py-3 font-semibold text-sm tracking-wide opacity-50 ${
 											plan.popular
 												? "bg-ds-bg text-ds-accent"
-												: "border-2 border-ds-muted3 rounded-xl text-ds-muted"
+												: "border border-ds-muted3 rounded-xl text-ds-muted"
 										}`}
 									>
 										Current Plan
@@ -304,7 +304,7 @@ function BillingPage() {
 									<button
 										type="button"
 										disabled
-										className="w-full py-3 font-extrabold text-sm tracking-wide border-2 border-ds-muted3 rounded-xl text-ds-muted opacity-50"
+										className="w-full py-3 font-semibold text-sm tracking-wide border border-ds-muted3 rounded-xl text-ds-muted opacity-50"
 									>
 										Downgrade
 									</button>
@@ -312,10 +312,10 @@ function BillingPage() {
 									<button
 										type="button"
 										disabled
-										className={`w-full py-3 font-extrabold text-sm tracking-wide opacity-70 ${
+										className={`w-full py-3 font-semibold text-sm tracking-wide opacity-70 ${
 											plan.popular
 												? "bg-ds-bg text-ds-accent"
-												: "border-2 border-ds-muted3 rounded-xl text-ds-muted"
+												: "border border-ds-muted3 rounded-xl text-ds-muted"
 										}`}
 									>
 										Coming soon
@@ -325,10 +325,10 @@ function BillingPage() {
 										type="button"
 										onClick={() => handleUpgrade(plan.id)}
 										disabled={busyAction !== null}
-										className={`w-full py-3 font-extrabold text-sm tracking-wide transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-50 ${
+										className={`w-full py-3 font-semibold text-sm tracking-wide transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-50 ${
 											plan.popular
 												? "bg-ds-bg text-ds-accent hover:opacity-90"
-												: "border-2 border-ds-border-strong rounded-2xl shadow-[4px 4px 0 0 var(--color-ds-border-strong)] hover:bg-ds-border-strong hover:text-ds-bg"
+												: "border border-ds-border-strong rounded-2xl shadow-sm hover:bg-ds-border-strong hover:text-ds-bg"
 										}`}
 									>
 										<Zap className="w-4 h-4" />

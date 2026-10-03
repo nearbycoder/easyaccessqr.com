@@ -8,12 +8,35 @@ import {
 } from "@/components/qr/qr-design-studio";
 import { useTRPC } from "@/integrations/trpc/react";
 import { slugifyQrName } from "@/lib/qr-links";
+import { httpUrl } from "@/lib/qr-toolkit";
 
 export const Route = createFileRoute("/app/qr-codes/new")({
 	component: NewQrCodePage,
+	validateSearch: (
+		search: Record<string, unknown>,
+	): { destination?: string; name?: string } => {
+		let destination = "";
+		if (
+			typeof search.destination === "string" &&
+			search.destination.length <= 1600
+		) {
+			try {
+				destination = httpUrl(search.destination).toString();
+			} catch {
+				/* Invalid prefill is ignored. */
+			}
+		}
+		const name =
+			typeof search.name === "string" ? search.name.slice(0, 100) : "";
+		return {
+			...(destination ? { destination } : {}),
+			...(name ? { name } : {}),
+		};
+	},
 });
 
 function NewQrCodePage() {
+	const prefill = Route.useSearch();
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
 	const navigate = Route.useNavigate();
@@ -63,7 +86,7 @@ function NewQrCodePage() {
 					<ArrowLeft className="h-4 w-4" />
 					Back to QR codes
 				</Link>
-				<h1 className="mt-2 text-2xl font-extrabold tracking-tighter sm:text-3xl">
+				<h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
 					Create QR code
 				</h1>
 				<p className="mt-1 text-base text-ds-text-secondary">
@@ -73,6 +96,8 @@ function NewQrCodePage() {
 
 			<QrDesignStudio
 				mode="create"
+				initialName={prefill.name}
+				initialDestinationUrl={prefill.destination}
 				submitPending={createCode.isPending}
 				onSubmit={handleSubmit}
 			/>

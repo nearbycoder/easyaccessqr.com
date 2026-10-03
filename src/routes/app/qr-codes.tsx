@@ -22,12 +22,16 @@ import {
 	Plus,
 	RotateCcw,
 	Search,
+	Star,
 	Trash2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { LibraryProductivity } from "@/components/qr/library-productivity";
 import { QrLibraryFilters } from "@/components/qr/qr-library-controls";
 import { QrPreviewModal } from "@/components/qr/qr-preview-modal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogClose,
@@ -45,6 +49,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTRPC } from "@/integrations/trpc/react";
 import { authClient } from "@/lib/auth-client";
 import { copyText, downloadCsv } from "@/lib/client-export";
@@ -54,6 +59,14 @@ import {
 	buildQrShortPath,
 	toAbsoluteUrl,
 } from "@/lib/qr-links";
+import {
+	defaultLibraryPreferences,
+	destinationHost,
+	libraryPreferencesSchema,
+	type SavedLibraryView,
+	savedViewSchema,
+} from "@/lib/qr-workspace";
+import { useBrowserStorage } from "@/lib/use-browser-storage";
 
 export const Route = createFileRoute("/app/qr-codes")({
 	component: QrCodesPage,
@@ -84,9 +97,30 @@ function QrCodesPage() {
 	const [searchValue, setSearchValue] = useState("");
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 	const [tagFilter, setTagFilter] = useState("all");
+	const [hostFilter, setHostFilter] = useState("all");
+	const [favoritesOnly, setFavoritesOnly] = useState(false);
 	const [sortOption, setSortOption] = useState<SortOption>("newest");
 	const { data: session } = authClient.useSession();
 	const { data: organizationsData } = authClient.useListOrganizations();
+	const preferenceScope = `${session?.user.id || ""}:${session?.session.activeOrganizationId || ""}`;
+	const [preferences, savePreferences] = useBrowserStorage(
+		`qr-library:v1:${preferenceScope}`,
+		libraryPreferencesSchema,
+		defaultLibraryPreferences,
+	);
+	// Workspace changes must clear selections before another batch can run.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Scope is the reset trigger.
+	useEffect(() => {
+		setSelectedIds([]);
+		setPageIndex(0);
+		setSearchValue("");
+		setStatusFilter("all");
+		setTagFilter("all");
+		setHostFilter("all");
+		setFavoritesOnly(false);
+		setLibraryFilters(defaultLibraryFilters);
+	}, [preferenceScope]);
+
 	const activeOrganizationSlug = useMemo(() => {
 		const activeOrganizationId = session?.session.activeOrganizationId ?? "";
 		if (!activeOrganizationId) return "";
@@ -158,10 +192,55 @@ function QrCodesPage() {
 			).sort((a, b) => a.localeCompare(b)),
 		[allCodes],
 	);
+	const allHosts = useMemo(
+		() =>
+			[
+				...new Set(
+					allCodes
+						.flatMap((code) => [
+							code.destinationUrl,
+							...code.destinations.map((item) => item.url),
+						])
+						.map(destinationHost)
+						.filter(Boolean),
+				),
+			].sort(),
+		[allCodes],
+	);
+	const currentView = {
+		search: searchValue,
+		status: statusFilter,
+		tag: tagFilter,
+		sort: sortOption,
+		host: hostFilter,
+		favoritesOnly,
+		filters: libraryFilters,
+	};
+	const applyView = (view: Omit<SavedLibraryView, "id" | "name">) => {
+		setSearchValue(view.search);
+		setStatusFilter(view.status);
+		setTagFilter(view.tag);
+		setSortOption(view.sort);
+		setHostFilter(view.host);
+		setFavoritesOnly(view.favoritesOnly);
+		setLibraryFilters(view.filters);
+		setPageIndex(0);
+		setSelectedIds([]);
+	};
 	const visibleCodes = useMemo(() => {
 		const normalizedQuery = searchValue.trim().toLowerCase();
 		return allCodes
 			.filter((code) => {
+				if (favoritesOnly && !preferences.favorites.includes(code.id))
+					return false;
+				if (
+					hostFilter !== "all" &&
+					![
+						code.destinationUrl,
+						...code.destinations.map((item) => item.url),
+					].some((url) => destinationHost(url) === hostFilter)
+				)
+					return false;
 				if (!matchesLibraryFilters(code, libraryFilters)) return false;
 				if (statusFilter === "active" && !code.isActive) return false;
 				if (statusFilter === "paused" && code.isActive) return false;
@@ -183,6 +262,9 @@ function QrCodesPage() {
 		statusFilter,
 		tagFilter,
 		libraryFilters,
+		hostFilter,
+		favoritesOnly,
+		preferences.favorites,
 	]);
 	const pageCount = Math.max(1, Math.ceil(visibleCodes.length / pageSize));
 	const currentPage = Math.min(pageIndex, pageCount - 1);
@@ -196,6 +278,8 @@ function QrCodesPage() {
 	);
 	const resetLibrary = () => {
 		setLibraryFilters(defaultLibraryFilters);
+		setHostFilter("all");
+		setFavoritesOnly(false);
 		setSelectedIds([]);
 		setPageIndex(0);
 	};
@@ -234,6 +318,8 @@ function QrCodesPage() {
 	}, [activeOrganizationSlug, previewCode]);
 	const hasActiveFilters =
 		Boolean(searchValue.trim()) ||
+		hostFilter !== "all" ||
+		favoritesOnly ||
 		statusFilter !== "all" ||
 		tagFilter !== "all" ||
 		Object.values(libraryFilters).some((value) => value !== "all");
@@ -332,6 +418,7 @@ function QrCodesPage() {
 						/>
 						<input
 							aria-label="Search QR codes"
+							maxLength={1600}
 							value={searchValue}
 							onChange={(event) => {
 								setSearchValue(event.target.value);
@@ -431,6 +518,27 @@ function QrCodesPage() {
 						}}
 					/>
 				</details>
+				<LibraryProductivity
+					key={preferenceScope}
+					hosts={allHosts}
+					current={savedViewSchema
+						.omit({ id: true, name: true })
+						.parse(currentView)}
+					views={preferences.views}
+					onChange={applyView}
+					onSave={(view) =>
+						savePreferences((current) => ({
+							...current,
+							views: [...current.views, view],
+						}))
+					}
+					onDelete={(id) =>
+						savePreferences((current) => ({
+							...current,
+							views: current.views.filter((view) => view.id !== id),
+						}))
+					}
+				/>
 			</div>
 			<div className="mb-3 flex flex-wrap items-center gap-3 px-1 py-1">
 				<label className="flex items-center gap-2 text-sm">
@@ -565,10 +673,7 @@ function QrCodesPage() {
 				) : isLoading ? (
 					<div className="space-y-2 p-4">
 						{[1, 2, 3].map((row) => (
-							<div
-								key={row}
-								className="h-16 animate-pulse rounded-xl border border-ds-border bg-ds-surface2/50"
-							/>
+							<Skeleton key={row} className="h-16 rounded-xl" />
 						))}
 					</div>
 				) : allCodes.length === 0 ? (
@@ -666,13 +771,7 @@ function QrCodesPage() {
 												{code.scanCount}{" "}
 												{code.scanCount === 1 ? "view" : "views"}
 											</span>
-											<span
-												className={
-													code.isActive
-														? "inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-300"
-														: "inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-1.5 py-0.5 text-amber-700 dark:text-amber-300"
-												}
-											>
+											<Badge variant="secondary">
 												{code.isActive ? (
 													<CircleCheck
 														aria-hidden="true"
@@ -685,7 +784,7 @@ function QrCodesPage() {
 													/>
 												)}
 												{code.isActive ? "Active" : "Paused"}
-											</span>
+											</Badge>
 											{code.isPublic ? (
 												<a
 													href={buildQrPublicPreviewPath(
@@ -718,6 +817,37 @@ function QrCodesPage() {
 										</div>
 									</div>
 									<div className="flex shrink-0 items-center gap-1">
+										<Button
+											variant="ghost"
+											size="icon"
+											aria-label={`${preferences.favorites.includes(code.id) ? "Unfavorite" : "Favorite"} ${code.name}`}
+											aria-pressed={preferences.favorites.includes(code.id)}
+											disabled={
+												!preferences.favorites.includes(code.id) &&
+												preferences.favorites.length >= 2000
+											}
+											onClick={() => {
+												if (
+													!savePreferences((current) => ({
+														...current,
+														favorites: current.favorites.includes(code.id)
+															? current.favorites.filter((id) => id !== code.id)
+															: [...current.favorites, code.id],
+													}))
+												)
+													toast.error("Browser storage is unavailable.");
+												setSelectedIds([]);
+											}}
+										>
+											<Star
+												data-icon="inline-start"
+												fill={
+													preferences.favorites.includes(code.id)
+														? "currentColor"
+														: "none"
+												}
+											/>
+										</Button>
 										<button
 											type="button"
 											aria-label={`View QR for ${code.name}`}

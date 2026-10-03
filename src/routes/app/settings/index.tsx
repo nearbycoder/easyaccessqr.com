@@ -28,7 +28,7 @@ function SettingsIndex() {
 	return (
 		<div className="mx-auto w-full max-w-[1320px]">
 			<div className="mb-8">
-				<h1 className="text-2xl font-extrabold tracking-tighter sm:text-3xl">
+				<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
 					Settings
 				</h1>
 				<p className="text-ds-muted text-sm mt-1">
@@ -36,7 +36,7 @@ function SettingsIndex() {
 				</p>
 			</div>
 
-			<div className="mb-6 border-2 border-ds-border rounded-2xl bg-ds-surface/60 p-4 sm:p-6">
+			<div className="mb-6 border border-ds-border rounded-2xl bg-ds-surface/60 p-4 sm:p-6">
 				<h2 className="text-sm font-bold tracking-wide text-ds-muted mb-6">
 					Organization
 				</h2>
@@ -51,7 +51,7 @@ function SettingsIndex() {
 					</div>
 					<div className="flex flex-col items-start gap-1 py-2 sm:flex-row sm:items-center sm:justify-between">
 						<span className="text-ds-muted text-sm">Plan</span>
-						<span className="text-ds-accent font-extrabold text-sm tracking-wide ">
+						<span className="text-ds-accent font-semibold text-sm tracking-wide ">
 							{planLabel}
 						</span>
 					</div>
@@ -68,7 +68,7 @@ function SettingsIndex() {
 						className="absolute right-5 top-5 h-4 w-4 text-ds-text-tertiary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ds-accent"
 					/>
 					<UserRound className="mb-3 h-6 w-6 text-ds-accent" />
-					<div className="text-sm font-extrabold tracking-wide">Profile</div>
+					<div className="text-sm font-semibold tracking-wide">Profile</div>
 					<div className="mt-1 text-xs text-ds-muted">Public bio</div>
 				</Link>
 				<Link
@@ -80,7 +80,7 @@ function SettingsIndex() {
 						className="absolute right-5 top-5 h-4 w-4 text-ds-text-tertiary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ds-accent"
 					/>
 					<Users className="mb-3 h-6 w-6 text-ds-accent" />
-					<div className="text-sm font-extrabold tracking-wide">People</div>
+					<div className="text-sm font-semibold tracking-wide">People</div>
 					<div className="mt-1 text-xs text-ds-muted">Members &amp; access</div>
 				</Link>
 				{canManageOrganization && (
@@ -93,7 +93,7 @@ function SettingsIndex() {
 							className="absolute right-5 top-5 h-4 w-4 text-ds-text-tertiary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ds-accent"
 						/>
 						<CreditCard className="mb-3 h-6 w-6 text-ds-accent" />
-						<div className="text-sm font-extrabold tracking-wide">Billing</div>
+						<div className="text-sm font-semibold tracking-wide">Billing</div>
 						<div className="mt-1 block overflow-hidden text-ellipsis whitespace-nowrap text-xs text-ds-muted">
 							Plan &amp; payment
 						</div>
@@ -108,7 +108,7 @@ function SettingsIndex() {
 						className="absolute right-5 top-5 h-4 w-4 text-ds-text-tertiary transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ds-accent"
 					/>
 					<LockKeyhole className="mb-3 h-6 w-6 text-emerald-500 dark:text-emerald-400" />
-					<div className="text-sm font-extrabold tracking-wide">Security</div>
+					<div className="text-sm font-semibold tracking-wide">Security</div>
 					<div className="mt-1 block overflow-hidden text-ellipsis whitespace-nowrap text-xs text-ds-muted">
 						Password &amp; sessions
 					</div>

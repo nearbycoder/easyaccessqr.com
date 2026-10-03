@@ -253,14 +253,14 @@ const themeBootScript = `(() => {
 function NotFound() {
 	return (
 		<div className="min-h-screen bg-[#11181d] text-[#ebf0f0] font-sans flex items-center justify-center p-4 sm:p-6 selection:bg-[#2f8c89]/30 selection:text-[#ecf3f3]">
-			<div className="w-full max-w-2xl rounded-3xl border border-[#334346] bg-gradient-to-br from-[#1b242a] via-[#1a2329] to-[#182127] px-7 py-8 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:px-10 sm:py-10">
-				<p className="text-[#de6346] text-4xl font-extrabold tracking-tight">
+			<div className="w-full max-w-2xl rounded-3xl border border-[#334346] bg-gradient-to-br from-[#1b242a] via-[#1a2329] to-[#182127] px-7 py-8 shadow-sm sm:px-10 sm:py-10">
+				<p className="text-[#de6346] text-4xl font-semibold tracking-tight">
 					Easy Access QR
 				</p>
 				<p className="mt-5 inline-flex rounded-full border border-[#446e70] bg-[#2f8c89]/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#91d6d2]">
 					404 · Page not found
 				</p>
-				<h1 className="mt-4 text-4xl font-extrabold tracking-tight text-[#f2f7f7] sm:text-5xl">
+				<h1 className="mt-4 text-4xl font-semibold tracking-tight text-[#f2f7f7] sm:text-5xl">
 					This page does not exist
 				</h1>
 				<p className="mt-3 max-w-xl text-lg leading-relaxed text-[#b5c2c2]">

@@ -74,8 +74,8 @@ function ResetPasswordPage() {
 			<div className="w-full max-w-md">
 				<AuthBrand />
 
-				<div className="border-2 border-ds-border-strong rounded-2xl shadow-[4px_4px_0_0_var(--color-ds-border-strong)] p-6 sm:p-8">
-					<h1 className="text-2xl font-extrabold tracking-tighter mb-2">
+				<div className="border border-ds-border-strong rounded-2xl shadow-sm p-6 sm:p-8">
+					<h1 className="text-2xl font-semibold tracking-tight mb-2">
 						Reset Password
 					</h1>
 					<p className="text-sm text-ds-muted mb-8">
@@ -84,25 +84,25 @@ function ResetPasswordPage() {
 
 					{success ? (
 						<div className="space-y-4">
-							<div className="border-2 border-ds-accent bg-ds-accent/10 p-3 text-ds-accent text-sm font-bold">
+							<div className="border border-ds-accent bg-ds-accent/10 p-3 text-ds-accent text-sm font-bold">
 								Password updated successfully.
 							</div>
 							<Link
 								to="/auth/sign-in"
 								search={{ invitationId: undefined, email: undefined }}
-								className="inline-block w-full bg-ds-accent text-ds-accent-fg py-3 text-center font-extrabold text-sm tracking-wide hover:bg-ds-accent-hover transition-colors"
+								className="inline-block w-full bg-ds-accent text-ds-accent-fg py-3 text-center font-semibold text-sm tracking-wide hover:bg-ds-accent-hover transition-colors"
 							>
 								Sign In
 							</Link>
 						</div>
 					) : invalidToken ? (
 						<div className="space-y-4">
-							<div className="border-2 border-red-500 bg-red-500/10 p-3 text-red-400 text-sm font-bold">
+							<div className="border border-red-500 bg-red-500/10 p-3 text-red-400 text-sm font-bold">
 								Invalid or expired reset link.
 							</div>
 							<Link
 								to="/auth/forgot-password"
-								className="inline-block w-full border-2 border-ds-border-strong rounded-2xl shadow-[4px_4px_0_0_var(--color-ds-border-strong)] py-3 text-center font-extrabold text-sm tracking-wide hover:bg-ds-surface transition-colors"
+								className="inline-block w-full border border-ds-border-strong rounded-2xl shadow-sm py-3 text-center font-semibold text-sm tracking-wide hover:bg-ds-surface transition-colors"
 							>
 								Request New Link
 							</Link>
@@ -110,7 +110,7 @@ function ResetPasswordPage() {
 					) : (
 						<form onSubmit={handleSubmit} className="space-y-6">
 							{error && (
-								<div className="border-2 border-red-500 bg-red-500/10 p-3 text-red-400 text-sm font-bold">
+								<div className="border border-red-500 bg-red-500/10 p-3 text-red-400 text-sm font-bold">
 									Error: {error}
 								</div>
 							)}
@@ -129,7 +129,7 @@ function ResetPasswordPage() {
 									required
 									minLength={8}
 									placeholder="min 8 chars"
-									className="w-full bg-ds-input-bg border-2 border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors placeholder:text-ds-muted2"
+									className="w-full bg-ds-input-bg border border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors placeholder:text-ds-muted2"
 								/>
 							</div>
 							<div>
@@ -146,13 +146,13 @@ function ResetPasswordPage() {
 									onChange={(event) => setConfirmPassword(event.target.value)}
 									required
 									minLength={8}
-									className="w-full bg-ds-input-bg border-2 border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors"
+									className="w-full bg-ds-input-bg border border-ds-muted3 rounded-xl px-4 py-3 text-ds-fg font-sans text-sm focus:border-ds-accent focus:outline-none transition-colors"
 								/>
 							</div>
 							<button
 								type="submit"
 								disabled={loading}
-								className="w-full bg-ds-accent text-ds-accent-fg py-3 font-extrabold text-sm tracking-wide hover:bg-ds-accent-hover transition-colors disabled:opacity-50"
+								className="w-full bg-ds-accent text-ds-accent-fg py-3 font-semibold text-sm tracking-wide hover:bg-ds-accent-hover transition-colors disabled:opacity-50"
 							>
 								{loading ? "Resetting..." : "Reset Password"}
 							</button>

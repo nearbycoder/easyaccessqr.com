@@ -5,15 +5,15 @@ import {
 	OctagonXIcon,
 	TriangleAlertIcon,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
+import { useTheme } from "@/lib/theme";
 
 const Toaster = ({ ...props }: ToasterProps) => {
-	const { theme = "system" } = useTheme();
+	const { resolved } = useTheme();
 
 	return (
 		<Sonner
-			theme={theme as ToasterProps["theme"]}
+			theme={resolved}
 			className="toaster group font-sans"
 			icons={{
 				success: <CircleCheckIcon className="size-4" />,
@@ -25,28 +25,28 @@ const Toaster = ({ ...props }: ToasterProps) => {
 			toastOptions={{
 				classNames: {
 					toast:
-						"rounded-2xl border-2 border-ds-border-strong bg-ds-bg text-ds-fg shadow-[4px_4px_0_0_var(--color-ds-border-strong)]",
-					title: "text-[11px] font-extrabold tracking-wide",
-					description: "text-xs text-ds-text-tertiary leading-relaxed",
+						"rounded-xl border border-border bg-card text-card-foreground shadow-lg",
+					title: "text-sm font-medium",
+					description: "text-xs text-muted-foreground leading-relaxed",
 					closeButton:
-						"border-2 border-ds-muted3 rounded-xl bg-ds-bg text-ds-text-secondary hover:bg-ds-surface hover:text-ds-fg",
+						"border border-border rounded-md bg-card text-muted-foreground hover:bg-accent hover:text-foreground",
 					actionButton:
-						"rounded-xl border-[2px] border-ds-accent bg-ds-accent px-2 py-1 text-[10px] font-extrabold tracking-wide text-ds-accent-fg hover:bg-ds-accent-hover",
+						"rounded-md border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90",
 					cancelButton:
-						"rounded-xl border-[2px] border-ds-muted3 bg-transparent px-2 py-1 text-[10px] font-extrabold tracking-wide text-ds-text-secondary hover:bg-ds-surface hover:text-ds-fg",
-					success: "border-l-[6px] border-l-ds-accent",
-					info: "border-l-[6px] border-l-cyan-500",
-					warning: "border-l-[6px] border-l-amber-500",
-					error: "border-l-[6px] border-l-red-500",
-					loading: "border-l-[6px] border-l-ds-muted",
+						"rounded-md border border-border bg-transparent px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground",
+					success: "border-l-4 border-l-primary",
+					info: "border-l-4 border-l-primary",
+					warning: "border-l-4 border-l-foreground",
+					error: "border-l-4 border-l-destructive",
+					loading: "border-l-4 border-l-muted-foreground",
 				},
 			}}
 			style={
 				{
-					"--normal-bg": "var(--ds-bg)",
-					"--normal-text": "var(--ds-fg)",
-					"--normal-border": "var(--ds-border-strong)",
-					"--border-radius": "16px",
+					"--normal-bg": "var(--card)",
+					"--normal-text": "var(--card-foreground)",
+					"--normal-border": "var(--border)",
+					"--border-radius": "12px",
 				} as React.CSSProperties
 			}
 			{...props}

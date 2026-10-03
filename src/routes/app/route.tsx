@@ -124,7 +124,7 @@ function OrgSetup() {
 	return (
 		<div className="min-h-screen bg-ds-bg px-4 py-8 sm:px-6">
 			<div className="mx-auto w-full max-w-xl border border-ds-border bg-ds-surface p-5 sm:p-8">
-				<div className="mb-6 text-[28px] font-extrabold tracking-tight text-[#de6346]">
+				<div className="mb-6 text-[28px] font-semibold tracking-tight text-ds-accent">
 					Easy Access QR
 				</div>
 				<h1 className="text-3xl font-bold tracking-tight">
@@ -249,7 +249,7 @@ function AppShell({
 							>
 								<Menu className="h-4 w-4" />
 							</button>
-							<div className="text-lg font-extrabold tracking-tight text-[#de6346] sm:text-xl">
+							<div className="text-lg font-semibold tracking-tight text-ds-accent sm:text-xl">
 								Easy Access QR
 							</div>
 						</div>
@@ -275,9 +275,10 @@ function AppShell({
 								<DropdownMenuTrigger asChild>
 									<button
 										type="button"
+										aria-label={`Account menu for ${session.user.name || session.user.email}`}
 										className="inline-flex max-w-64 items-center gap-2 rounded-lg border border-transparent bg-ds-surface px-2 py-1 text-left transition-colors hover:bg-ds-surface2 sm:gap-2.5 sm:px-2.5"
 									>
-										<div className="flex h-7 w-7 items-center justify-center rounded-full bg-ds-surface2 text-[11px] font-extrabold text-ds-accent sm:h-8 sm:w-8 sm:text-xs">
+										<div className="flex h-7 w-7 items-center justify-center rounded-full bg-ds-surface2 text-[11px] font-semibold text-ds-accent sm:h-8 sm:w-8 sm:text-xs">
 											{session.user.name?.charAt(0) ?? "U"}
 										</div>
 										<div className="min-w-0 hidden sm:block">
@@ -422,7 +423,7 @@ function SidebarContent({
 	return (
 		<div className="flex h-full min-h-0 flex-col">
 			<div className="flex h-14 shrink-0 items-center px-5">
-				<div className="text-[20px] font-bold leading-none tracking-tight whitespace-nowrap text-[#de6346]">
+				<div className="text-[20px] font-bold leading-none tracking-tight whitespace-nowrap text-ds-accent">
 					Easy Access QR
 				</div>
 			</div>

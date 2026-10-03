@@ -8,6 +8,10 @@ export const toolkitTypes = [
 	["text", "Plain text"],
 	["whatsapp", "WhatsApp"],
 	["campaign", "Campaign URL"],
+	["website", "Website"],
+	["event", "Calendar event"],
+	["place", "Place or address"],
+	["social", "Social profile"],
 ] as const;
 export type ToolkitType = (typeof toolkitTypes)[number][0];
 export type ToolkitFields = Record<string, string>;
@@ -157,6 +161,74 @@ export function buildToolkitPayload(
 		case "campaign":
 			payload = campaignUrl(fields);
 			break;
+		case "website":
+			payload = httpUrl(required(fields.url, "Website URL")).toString();
+			break;
+		case "place": {
+			const url = new URL("https://www.google.com/maps/search/");
+			url.searchParams.set("api", "1");
+			url.searchParams.set(
+				"query",
+				required(fields.address, "Place or address").trim(),
+			);
+			payload = url.toString();
+			break;
+		}
+		case "social": {
+			const origins: Record<string, string> = {
+				instagram: "https://www.instagram.com/",
+				tiktok: "https://www.tiktok.com/@",
+				x: "https://x.com/",
+				github: "https://github.com/",
+				linkedin: "https://www.linkedin.com/in/",
+			};
+			const origin = origins[fields.platform || "instagram"];
+			const handle = required(fields.handle, "Profile handle")
+				.trim()
+				.replace(/^@/, "");
+			if (!origin || !/^[a-zA-Z0-9_.-]{1,100}$/.test(handle))
+				throw new Error(
+					"Choose a platform and enter a handle without spaces or slashes.",
+				);
+			payload = `${origin}${encodeURIComponent(handle)}`;
+			break;
+		}
+		case "event": {
+			// Explicit UTC inputs make exported events independent of browser time zones.
+			const parseDate = (value: string | undefined, label: string) => {
+				const input = required(value, label);
+				if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input))
+					throw new Error(`Enter a valid ${label.toLowerCase()} in UTC.`);
+				const date = new Date(`${input}:00Z`);
+				if (
+					!Number.isFinite(date.getTime()) ||
+					date.toISOString().slice(0, 16) !== input
+				)
+					throw new Error(`Enter a valid ${label.toLowerCase()} in UTC.`);
+				return date;
+			};
+			const start = parseDate(fields.start, "Start time");
+			const end = parseDate(fields.end, "End time");
+			if (end <= start) throw new Error("End time must be after start time.");
+			const stamp = (date: Date) =>
+				date
+					.toISOString()
+					.replace(/[-:]/g, "")
+					.replace(/\.\d{3}Z$/, "Z");
+			payload = `${[
+				"BEGIN:VEVENT",
+				`DTSTART:${stamp(start)}`,
+				`DTEND:${stamp(end)}`,
+				`SUMMARY:${cardEscape(required(fields.name, "Event title"))}`,
+				fields.address ? `LOCATION:${cardEscape(fields.address)}` : "",
+				fields.message ? `DESCRIPTION:${cardEscape(fields.message)}` : "",
+				"END:VEVENT",
+			]
+				.filter(Boolean)
+				.map(foldCardLine)
+				.join("\r\n")}\r\n`;
+			break;
+		}
 	}
 	if (new TextEncoder().encode(payload).length > 1600)
 		throw new Error(
